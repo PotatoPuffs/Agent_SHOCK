@@ -228,3 +228,4 @@ training_curve.png
 __pycache__/
 *.pyc
 .env
+venv/
