@@ -3,7 +3,7 @@
 Train a reinforcement learning agent in simulation, then deploy via EMS to a human arm.
 
 ```
-aiming_rl/
+Agent_SHOCK/
 ├── env/
 │   ├── aiming_env.py        ← Custom Gym environment (sim / screen / real modes)
 │   └── ems_controller.ino   ← Arduino firmware (MCU relay control)
@@ -18,7 +18,7 @@ aiming_rl/
 ## Phase 1 — Install
 
 ```bash
-cd aiming_rl
+cd Agent_SHOCK
 pip install -r requirements.txt
 ```
 
