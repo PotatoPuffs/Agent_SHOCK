@@ -2,7 +2,7 @@
 
 **Human-robot hybrid aiming system** — an Reinforced Learning (RL) agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
 
-> 🧠 Built by the **Pixel Fairies** for [AI in Robotics]
+> 🧠 Built by the **Pixel Fairies** for _AI in Robotics_
 
 ---
 
