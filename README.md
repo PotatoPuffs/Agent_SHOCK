@@ -1,6 +1,20 @@
-# AimingRL — Human-Robot Hybrid Aiming System
+# Agent_SHOCK ⚡
 
-Train a reinforcement learning agent in simulation, then deploy via EMS to a human arm.
+**Human-robot hybrid aiming system** — an Reinforced Learning (RL) agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
+
+> 🧠 Built by the **Pixel Fairies** for [AI in Robotics]
+
+---
+
+## Project Context
+
+Agent_SHOCK is a closed-loop computer interface system where a reinforcement learning agent learns to aim a cursor at targets in a browser-based game [aiming.pro](https://aiming.pro/app#/training/drills/52502) → then actuates a real human arm using a TENS/EMS device to physically move the mouse.
+
+The system is split into four subsystems: **Perception**, **Cognition**, **Middleware**, and **Actuation** — detailed documentation for each lives in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki).
+
+---
+
+## Repository Structure
 
 ```
 Agent_SHOCK/
@@ -15,108 +29,47 @@ Agent_SHOCK/
 
 ---
 
-## Phase 1 — Install
+## Quick Start
 
-```bash
-cd Agent_SHOCK
-pip install -r requirements.txt
-```
+See the Wiki for full setup and usage guides:
 
----
-
-## Phase 2 — Train in simulation (no screen, no mouse, no EMS)
-
-```bash
-# Fast headless training — 500k steps takes ~10–20 min on CPU
-python scripts/train.py
-
-# Watch the agent play while training (slower, needs a display)
-python scripts/train.py --render
-
-# Training produces:
-#   ./models/aiming_ppo.zip      ← saved policy
-#   ./training_curve.png         ← reward + hits plot, updated every 5k steps
-#   ./tb_logs/                   ← TensorBoard logs
-```
-
-**What the agent learns:**
-- Observation: [pixel_error, cursor_x, target_direction]  (3 numbers)
-- Actions: move_left | move_right | click
-- Reward: –|error|/width per step, +10 on hit, –2 on miss, –5 on timeout
-
-The target bounces left/right randomly, just like aiming.pro's lateral-movement drills.
+- 📦 [Installation Guide](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation)
+- 🏃 [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System)
+- ⚡ [EMS / Hardware Setup](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-The-Muscles)
 
 ---
 
-## Phase 3 — Verify against the real game (no EMS yet)
+## Documentation (Wiki)
 
-Open aiming.pro drill in your browser. Keep it in the foreground.
+Full project documentation is maintained in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki):
 
-```bash
-# Watch what the agent WOULD do — no clicking, no EMS
-python scripts/screen_agent.py --dry-run --debug
-
-# Actually click using pyautogui (agent controls clicks, human moves mouse manually)
-python scripts/screen_agent.py --click
-```
-
-The `--debug` flag opens a CV window showing what the blob detector sees.
-Tune `CAPTURE_REGION` in `screen_agent.py` to match your browser window position.
-
----
-
-## Phase 4 — EMS deployment (real arm)
-
-### Hardware setup
-1. Upload `env/ems_controller.ino` to Arduino (Uno / Nano / Mega)
-2. Wire two relay modules:
-   - Relay 1 → TENS channel 1 (left muscle)
-   - Relay 2 → TENS channel 2 (right muscle)
-3. Set TENS intensity LOW (start at level 5, increase slowly)
-4. Place electrodes on forearm — one pair per channel
-
-### Run
-```bash
-python scripts/screen_agent.py --ems --port /dev/ttyUSB0
-# On Windows: --port COM3
-```
-
-Serial protocol: `C<0|1>D<ms>\n`
-- `C0D50\n` = fire left channel for 50ms
-- `C1D50\n` = fire right channel for 50ms
+| Page | Description |
+|---|---|
+| [Project Overview](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Project-Overview) | What Agent_SHOCK is, goals, and architecture summary |
+| [Subsystem Architecture](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Subsystem-Architecture) | Full system diagram and data flow |
+| [Perception](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Perception-The-Eyes) | Screen capture, CNN inference, CV pipeline |
+| [Cognition](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Cognition-The-Brain) | RL agent, reward structure, training |
+| [Middleware](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware-The-Nervous-System) | micro-ROS, serial bridge, MCU comms |
+| [Actuation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-The-Muscles) | EMS hardware, TENS relay, electrode setup |
+| [Installation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation) | Dependency setup and environment config |
+| [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System) | Step-by-step run instructions |
+| [Team](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Team) | The Pixel Fairies |
 
 ---
 
-## Tuning tips
+## Portfolio & Demo
 
-| Parameter | File | Effect |
-|---|---|---|
-| `step_px` | `train.py` | Larger = faster cursor, harder to be precise |
-| `target_radius` | `train.py` | Bigger = easier hits, less accuracy needed |
-| `ent_coef` | `train.py` | Higher = more exploration (helpful early) |
-| Pulse duration `D<ms>` | `screen_agent.py` | Longer = stronger contraction |
-| `COOLDOWN_MS` | `ems_controller.ino` | Safety gap — don't reduce below 300ms |
-| HSV range in `detect_target_x` | `screen_agent.py` | Tune if targets aren't detected |
+- 🌐 **Project Website:** [Coming soon — link to be added]
+- 🎥 **Demo Video:** [Coming soon — link to be added]
 
 ---
 
-## Sim-to-real gap
+## Safety
 
-The agent trained in sim expects clean pixel-error observations. In the real deployment:
-- **Latency**: screen capture + inference + serial + muscle takes ~50–100ms
-- **Non-linearity**: arm doesn't move proportionally to pulse duration
-- **Fatigue**: repeated stimulation reduces response over time
-
-**Mitigation**: after initial sim training, run 10–20 short real-arm sessions and fine-tune with `model.learn()` using real observations. The pre-trained sim weights give a huge head start.
+⚠️ This system delivers electrical stimulation to a human. See the [EMS Safety Checklist](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-The-Muscles#safety-checklist) before any hardware testing.
 
 ---
 
-## Safety checklist before EMS testing
+## Team
 
-- [ ] TENS intensity verified LOW before connecting to human
-- [ ] Emergency stop button wired to cut relay power
-- [ ] Max pulse duration in firmware: 200ms
-- [ ] Cooldown in firmware: ≥500ms
-- [ ] Stimulation site: forearm only (extensor/flexor digitorum)
-- [ ] No stimulation near heart, across chest, or near head/neck
-- [ ] Second person present during first EMS session
+Built by the **Pixel Fairies** — see the [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Team) or our [project portfolio](<!-- link -->).
