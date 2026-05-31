@@ -59,8 +59,8 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 ## Portfolio & Demo
 
-- 🌐 **Project Website:** [Coming soon — link to be added]
-- 🎥 **Demo Video:** [Coming soon — link to be added]
+- 🌐 **Project Website:** https://potatopuffs.github.io/Agent_SHOCK 
+- 🎥 **Demo Video:** https://potatopuffs.github.io/Agent_SHOCK/videos.html
 
 ---
 
@@ -72,4 +72,4 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 ## Team
 
-Built by the **Pixel Fairies** — see the [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) or our [project portfolio](<!-- link -->).
+Built by the **Pixel Fairies** — see the [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) 
