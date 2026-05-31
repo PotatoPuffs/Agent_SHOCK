@@ -1,6 +1,6 @@
 # Agent_SHOCK ⚡
 
-**Human-robot hybrid aiming system** — an Reinforced Learning (RL) agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
+**Human-robot hybrid aiming system**: an Reinforced Learning (RL) agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
 
 > 🧠 Built by the **Pixel Fairies** for _AI in Robotics_
 
@@ -8,9 +8,9 @@
 
 ## Project Context
 
-Agent_SHOCK is a closed-loop computer interface system where a reinforcement learning agent learns to aim a cursor at targets in a browser-based game [aiming.pro](https://aiming.pro/app#/training/drills/52502) → then actuates a real human arm using a TENS/EMS device to physically move the mouse.
+Agent_SHOCK is a computer interface system where an agent learns to aim a cursor at targets in a browser-based game [aiming.pro](https://aiming.pro/app#/training/drills/52502) → then actuates a real human arm using a TENS/EMS device to physically move the mouse.
 
-The system is split into four subsystems: **Perception**, **Cognition**, **Middleware**, and **Actuation** — detailed documentation for each lives in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki).
+The system is split into four subsystems: **Perception**, **Cognition**, **Middleware** and **Actuation** — detailed documentation for each lives in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki).
 
 ---
 
@@ -45,7 +45,7 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 | Page | Description |
 |---|---|
-| [Project Overview](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Project-Overview) | What Agent_SHOCK is, goals, and architecture summary |
+| [Project Overview](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Project-Overview) | What Agent_SHOCK is, goals and architecture summary |
 | [Subsystem Architecture](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Subsystem-Architecture) | Full system diagram and data flow |
 | [Perception](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Perception) | Screen capture, CNN inference, CV pipeline |
 | [Cognition](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Cognition) | RL agent, reward structure, training |
@@ -59,8 +59,8 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 ## Portfolio & Demo
 
-- 🌐 **Project Website:** [Coming soon — link to be added]
-- 🎥 **Demo Video:** [Coming soon — link to be added]
+- 🌐 **Project Website:** https://potatopuffs.github.io/Agent_SHOCK 
+- 🎥 **Demo Video:** https://potatopuffs.github.io/Agent_SHOCK/videos.html
 
 ---
 
@@ -72,4 +72,4 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 ## Team
 
-Built by the **Pixel Fairies** — see the [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) or our [project portfolio](<!-- link -->).
+Built by the **Pixel Fairies** — [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) 
