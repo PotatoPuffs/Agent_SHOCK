@@ -21,7 +21,7 @@ Agent_SHOCK/
 cd Agent_SHOCK
 pip install -r requirements.txt
 ```
-
+Also include this repository for your own data collection for EMS: https://github.com/jspsych/jsPsych/releases.
 ---
 
 ## Phase 2 — Train in simulation (no screen, no mouse, no EMS)
