@@ -1,23 +1,17 @@
-# ─── Core RL ──────────────────────────────────────────────────────────────────
-gymnasium>=0.29
-stable-baselines3>=2.3
-torch>=2.0          # CPU build fine for training; GPU speeds it up
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
 
-# ─── Screen capture & computer vision ────────────────────────────────────────
-mss>=9.0            # Fast screen capture (screen / real mode)
-opencv-python>=4.9  # Target detection (blob or YOLO pre/post-process)
-Pillow>=10.0
+# Numerical & Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
 
-# ─── Optional: YOLO perception ────────────────────────────────────────────────
-# ultralytics>=8.2   # Uncomment when you have labelled target data
+# Image Processing
+Pillow>=9.0.0
+opencv-python>=4.7.0
 
-# ─── Real mouse click (screen_agent.py only) ──────────────────────────────────
-pyautogui>=0.9
+# Screen Capture
+mss>=9.0.0
 
-# ─── EMS serial comms (real mode only) ────────────────────────────────────────
-pyserial>=3.5
-
-# ─── Visualisation ────────────────────────────────────────────────────────────
-matplotlib>=3.8
-pygame>=2.5         # Live env renderer (--render flag)
-tensorboard>=2.16   # Training curves (optional)
+# Utilities
+tqdm>=4.65.0
