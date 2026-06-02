@@ -3,8 +3,8 @@ import time
 import threading
 from pynput import keyboard
 
-PORT = 'COM9'
-BAUD = 115200
+PORT = 'COM10'
+BAUD = 9600
 
 FIRE_INTERVAL = 0.5
 PULSE_DURATION = 0.1
