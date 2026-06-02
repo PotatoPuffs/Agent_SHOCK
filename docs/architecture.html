@@ -324,7 +324,7 @@
             </div>
           </div>
 
-          <div class="arrow">↓ <span class="arrow-label">control command {channel, duration_ms}</span></div>
+          <div class="arrow">↓ <span class="arrow-label">control command: L / R / C / N</span></div>
 
           <!-- MIDDLEWARE -->
           <div class="flow-node node-neuro" id="node-middleware">
@@ -333,27 +333,37 @@
               <span class="node-toggle" id="tog-middleware">▼</span>
             </div>
             <div class="node-detail" id="det-middleware">
-              <p>Bridges the Python software layer and the Arduino hardware. Packages agent commands into serial messages and transmits to the MCU over USB or WiFi.</p>
+              <p>Bridges the Python software layer and the Arduino hardware. Translates agent commands into single-character serial messages and transmits to the MCU over USB at 9600 baud.</p>
               <div class="detail-row">
                 <div class="detail-col">
                   <h4>Serial protocol</h4>
-                  <ul><li>C0D50\n → left 50ms</li><li>C1D50\n → right 50ms</li><li>USB / COM port</li></ul>
+                  <ul>
+                    <li>L → left relay ON</li>
+                    <li>R → right relay ON</li>
+                    <li>C → click relay ON</li>
+                    <li>N → all relays OFF</li>
+                  </ul>
                 </div>
                 <div class="detail-col">
-                  <h4>ROS2 topics</h4>
-                  <ul><li>/agent/command</li><li>/mcu/status</li><li>micro-ROS on MCU</li></ul>
+                  <h4>Python middleware</h4>
+                  <ul>
+                    <li>serial_test.py</li>
+                    <li>Spacebar toggle loop</li>
+                    <li>L → R → C sequence</li>
+                    <li>Baud rate: 9600</li>
+                  </ul>
                 </div>
               </div>
               <div class="chips">
-                <span class="chip chip-green">micro-ROS</span>
-                <span class="chip chip-green">ROS2</span>
-                <span class="chip chip-green">pyserial</span>
-                <span class="chip chip-green">Arduino IDE</span>
+                <span class="chip chip-green">PySerial</span>
+                <span class="chip chip-green">pynput</span>
+                <span class="chip chip-green">Python</span>
+                <span class="chip chip-green">PlatformIO</span>
               </div>
               <div style="margin-top:8px;">
                 <span style="font-size:10px; background:#fff3cd; color:#856404; padding:3px 8px; border:1px solid #ffc107; font-weight:700;">Owner: Osmond Lau</span>
               </div>
-              <a href="https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware-The-Nervous-System" target="_blank" class="wiki-link">📖 Wiki: Middleware →</a>
+              <a href="https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware" target="_blank" class="wiki-link">📖 Wiki: Middleware →</a>
             </div>
           </div>
 
