@@ -1,0 +1,30 @@
+import serial
+import time
+
+PORT = 'COM9'
+BAUD = 115200
+
+try:
+    ser = serial.Serial(PORT, BAUD, timeout=2)
+    print(f"Port opened: {ser.name}")
+    time.sleep(2)
+    
+    print(f"Bytes waiting on open: {ser.in_waiting}")
+    
+    ready = ser.readline().decode().strip()
+    print(f"Arduino said: '{ready}'")
+    
+    print("Sending L...")
+    ser.write(b"L\n")
+    time.sleep(0.5)
+    
+    print(f"Bytes waiting after send: {ser.in_waiting}")
+    
+    while ser.in_waiting:
+        response = ser.readline().decode().strip()
+        print(f"Arduino responded: '{response}'")
+
+    ser.close()
+
+except serial.SerialException as e:
+    print(f"Serial error: {e}")
