@@ -48,7 +48,7 @@ from model import AgentShockCNN
 # CONSTANTS — must match collect_data.py and train.py CONFIG
 # ─────────────────────────────────────────────────────────────────────────────
 
-MODEL_PATH = "checkpoints/best_cnn.pth"  # saved by train.py
+MODEL_PATH = "cnn/checkpoints/best_cnn.pth"  # saved by train.py
 
 FRAME_W    = 1920   # actual game/screen resolution (used to de-normalise coords)
 FRAME_H    = 1080

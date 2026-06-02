@@ -31,7 +31,7 @@ Finding your Arduino port:
 import time
 import serial
 import serial.tools.list_ports
-from interfacing import BaseEMSController
+from integration.interfacing import BaseEMSController
 
 # ── Serial configuration ──────────────────────────────────────────────────────
 SERIAL_PORT  = "COM3"       # ❗ REAL VALUE: your Arduino's port (see docstring above)

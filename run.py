@@ -19,6 +19,10 @@ Usage:
     # --- DEPLOY: real CNN, real EMS (live session on a person) ---
     python run.py --mode deploy --cnn real --ems real
 
+    # --- TEST DEPLOY: AimingEnv observer + real/sim EMS (isolate EMS testing) ---
+    python run.py --mode test_deploy --ems sim        # test with simulated EMS
+    python run.py --mode test_deploy --ems real       # test with real EMS
+
     # --- EVALUATE saved model in sim ---
     python run.py --mode eval
 
@@ -75,8 +79,8 @@ def make_observer(cnn_mode: str, ems_sim=None):
     elif cnn_mode == "real":
         # Teammate's implementation — import path agreed in interfacing.py
         # Uncomment when the real observer is ready:
-        # from perception.cnn_observer import RealCNNObserver
-        # return RealCNNObserver(screen_w=SCREEN_W)
+        from integration.cnn_observer import RealCNNObserver
+        return RealCNNObserver(screen_w=SCREEN_W)
         raise NotImplementedError(
             "Real CNN observer not yet connected.\n"
             "Implement perception/cnn_observer.py::RealCNNObserver and "
@@ -103,8 +107,8 @@ def make_ems(ems_mode: str, observer=None):
     elif ems_mode == "real":
         # Teammate's implementation
         # Uncomment when the real controller is ready:
-        # from hardware.ems_controller import RealEMSController
-        # return RealEMSController(pulse_duration_ms=PULSE_DURATION_MS)
+        from integration.ems_controller import RealEMSController
+        return RealEMSController(port="/dev/ttyACM0",  baud=9600)
         raise NotImplementedError(
             "Real EMS controller not yet connected.\n"
             "Implement hardware/ems_controller.py::RealEMSController and "
@@ -160,6 +164,8 @@ def deploy_loop(model, observer, ems, dry_run: bool = False):
                 last_dx=last_dx,
                 pulse_duration_ms=PULSE_DURATION_MS,
             )
+
+            
 
             # Sanity check obs shape matches what the model was trained on
             assert obs.shape == (OBS_SIZE,), \
@@ -340,6 +346,7 @@ def train(args):
 
 def evaluate(args):
     """Run saved model in the sim deploy loop for N episodes and print stats."""
+    from env.aiming_env import AimingEnv
     from stable_baselines3 import PPO
     from integration.simulators import SimulatedCNNObserver, SimulatedEMSController
 
@@ -347,7 +354,17 @@ def evaluate(args):
 
     observer = SimulatedCNNObserver(screen_w=SCREEN_W)
     ems      = SimulatedEMSController(observer=observer, std_scale=1.0)
-    model    = PPO.load(MODEL_PATH)
+    
+    env = AimingEnv(
+        screen_w=SCREEN_W,
+        max_steps=300,
+        target_radius=TARGET_RADIUS,
+        pulse_duration_ms=PULSE_DURATION_MS,
+        render_mode="human",
+        std_scale=0.0,   # curriculum starts deterministic
+    )
+
+    model    = PPO.load(MODEL_PATH, env=env)
 
     ACTION_MAP = {0: "left", 1: "right", 2: "click"}
 
@@ -362,6 +379,7 @@ def evaluate(args):
         hits     = 0
         steps    = 0
         max_steps = 300
+        env.render()
 
         while steps < max_steps:
             obs, target_x, cursor_x = observer.get_state(
@@ -396,14 +414,136 @@ def evaluate(args):
     print(f"Mean hits/ep: {np.mean(all_hits):.1f}")
     ems.close()
 
-# ── Entry point ───────────────────────────────────────────────────────────────
+# ── Test Deployment (AimingEnv observer + real/sim EMS) ──────────────────────
+
+def test_deploy(args):
+    """
+    Test deployment using AimingEnv as the perfect observer (no CNN).
+    
+    This isolates EMS behavior testing from CNN uncertainty.
+    Runs trained RL model against simulated aiming game with real or simulated EMS.
+    
+    Metrics tracked:
+        - Hits per episode
+        - Total reward
+        - Average error
+        - FPS
+        - Commands sent to EMS
+    """
+    from env.aiming_env import AimingEnv
+    from stable_baselines3 import PPO
+    from integration.simulators import SimulatedEMSController
+    from integration.ems_controller import RealEMSController
+
+    print("\n=== Test Deployment (AimingEnv + EMS) ===")
+    print(f"EMS: {'sim' if args.ems == 'sim' else 'real'}")
+    print(f"Episodes: 10\n")
+
+    # ── Create AimingEnv observer ─────────────────────────────────────────────
+    observer = AimingEnv(
+        screen_w=SCREEN_W,
+        max_steps=300,
+        target_radius=TARGET_RADIUS,
+        pulse_duration_ms=PULSE_DURATION_MS,
+        render_mode="human",
+        std_scale=1.0,  # full variance
+    )
+
+    # ── Create EMS controller ─────────────────────────────────────────────────
+    if args.ems == "sim":
+        # Use sim observer's cursor tracking
+        from integration.simulators import SimulatedCNNObserver
+        sim_observer = SimulatedCNNObserver(screen_w=SCREEN_W)
+        ems = SimulatedEMSController(observer=sim_observer, std_scale=1.0)
+    else:
+        # Real EMS via serial
+        ems = RealEMSController(port="/dev/ttyACM0", baud=9600)
+
+    # ── Load model ────────────────────────────────────────────────────────────
+    model = PPO.load(MODEL_PATH)
+
+    # ── Metrics collection ────────────────────────────────────────────────────
+    ACTION_MAP = {0: "left", 1: "right", 2: "click"}
+    n_episodes = 10
+    all_episode_hits = []
+    all_episode_rewards = []
+    total_frames = 0
+
+    print(f"{'Ep':>3} {'Hits':>4} {'Reward':>8} {'Avg Err':>8} {'Frames':>6} {'FPS':>6}")
+    print("-" * 50)
+
+    try:
+        for ep in range(n_episodes):
+            obs, info = observer.reset()
+            episode_hits = 0
+            episode_reward = 0.0
+            episode_errors = []
+            last_action_sent = None
+            frame_count = 0
+            episode_start = time.perf_counter()
+
+            while True:
+                t0 = time.perf_counter()
+
+                # ── Get action from RL model ──────────────────────────────────
+                action, _ = model.predict(obs, deterministic=True)
+                action_str = ACTION_MAP[int(action)]
+
+                # ── Send to EMS (deduplication: only if action changed) ────────
+                if action_str != last_action_sent:
+                    ems.send_action(action_str)
+                    last_action_sent = action_str
+
+                # ── Step environment ─────────────────────────────────────────
+                obs, reward, terminated, truncated, info = observer.step(action)
+                done = terminated or truncated
+
+                episode_reward += reward
+                frame_count += 1
+                total_frames += 1
+
+                # ── Track error ───────────────────────────────────────────────
+                if "error" in info:
+                    episode_errors.append(info["error"])
+
+                # ── Track hits ────────────────────────────────────────────────
+                if "hits" in info:
+                    episode_hits = info["hits"]
+
+                if done:
+                    break
+
+            episode_duration = time.perf_counter() - episode_start
+            avg_error = np.mean(episode_errors) if episode_errors else 0.0
+            fps = frame_count / max(episode_duration, 0.01)
+
+            all_episode_hits.append(episode_hits)
+            all_episode_rewards.append(episode_reward)
+
+            print(f"{ep+1:3d} {episode_hits:4d} {episode_reward:8.2f} "
+                  f"{avg_error:8.2f} {frame_count:6d} {fps:6.1f}")
+
+    except KeyboardInterrupt:
+        print("\n\nStopped.")
+    finally:
+        observer.close()
+        ems.close()
+
+    # ── Summary statistics ────────────────────────────────────────────────────
+    print("-" * 50)
+    print(f"\nSummary (10 episodes):")
+    print(f"  Mean hits/episode:    {np.mean(all_episode_hits):.1f}")
+    print(f"  Mean reward/episode:  {np.mean(all_episode_rewards):.2f}")
+    print(f"  Total frames:         {total_frames:,}")
+    print(f"  EMS type:             {args.ems}")
+    print()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Agent SHOCK — unified runner")
 
     parser.add_argument(
-        "--mode", choices=["train", "deploy", "eval"], default="train",
-        help="train: gym loop | deploy: live game loop | eval: evaluate saved model",
+        "--mode", choices=["train", "deploy", "eval", "test_deploy"], default="train",
+        help="train: gym loop | deploy: live game loop | eval: evaluate model | test_deploy: test with AimingEnv",
     )
     parser.add_argument(
         "--cnn", choices=["sim", "real"], default="sim",
@@ -443,4 +583,7 @@ if __name__ == "__main__":
         model    = PPO.load(MODEL_PATH)
 
         print("\n=== Agent SHOCK — Deployment ===")
-        deploy_loop(model, observer, ems, dry_run=args.dry_run)
+        deploy_loop(model, observer, ems, dry_run=True)
+
+    elif args.mode == "test_deploy":
+        test_deploy(args)

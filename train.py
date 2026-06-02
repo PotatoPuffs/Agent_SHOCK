@@ -14,7 +14,7 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from env.aiming_env import AimingEnv
+from env.aiming_env_OLD import AimingEnv
 
 try:
     from stable_baselines3 import PPO
@@ -131,7 +131,7 @@ def evaluate(args):
 
     env = AimingEnv(
         screen_w=1280,
-        step_px=12,
+        # step_px=12,
         max_steps=300,
         target_radius=30,
         render_mode="human",

@@ -50,8 +50,8 @@ from dataset import build_dataloaders
 # which settings produced a given model file.
 
 CONFIG = {
-    "csv_path"       : "data/labels.csv",    # labels produced by collect_data.py
-    "frames_dir"     : "data/frames/",        # frame PNGs from collect_data.py
+    "csv_path"       : "cnn/data/labels.csv",    # labels produced by collect_data.py
+    "frames_dir"     : "cnn/data/frames/",        # frame PNGs from collect_data.py
     "checkpoint_dir" : "checkpoints/",        # where to save best_cnn.pth
     "batch_size"     : 32,    # frames per gradient update step
                                # ↑ higher = faster but needs more GPU memory
