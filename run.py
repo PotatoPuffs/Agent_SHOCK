@@ -48,7 +48,7 @@ from integration.interfacing import (
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 
-MODEL_PATH = "models/aiming_ppo2"
+MODEL_PATH = "models/aiming_ppo3"
 CLICK_Y    = 130 + 720 // 2   # vertical centre of game capture region
 
 # Curriculum schedule (training only)

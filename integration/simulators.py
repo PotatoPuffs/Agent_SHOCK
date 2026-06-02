@@ -23,14 +23,13 @@ from integration.interfacing import (BaseCNNObserver, BaseEMSController,
                                      SCREEN_W, TARGET_RADIUS, PULSE_DURATION_MS, MAX_DX)
 
 # ── EMS displacement distribution ────────────────────────────────────────────
-# ❗ REAL VALUES: replace these with output from ems_visualise.py
+# REAL VALUES: replace these with output from ems_visualise.py
 MEAN_PEAK    = 15.0   # px — average rightward displacement per pulse
 STD_PEAK     = 6.0    # px — std of rightward displacements
 MEAN_TROUGH  = 12.0   # px — average leftward displacement per pulse
 STD_TROUGH   = 5.0    # px — std of leftward displacements
 P_NO_RESP    = 0.05   # probability a pulse produces zero movement (fatigue)
 # ─────────────────────────────────────────────────────────────────────────────
-
 
 class SimulatedCNNObserver(BaseCNNObserver):
     """

@@ -1,0 +1,17 @@
+# Deep Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Numerical & Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Image Processing
+Pillow>=9.0.0
+opencv-python>=4.7.0
+
+# Screen Capture
+mss>=9.0.0
+
+# Utilities
+tqdm>=4.65.0
