@@ -1,23 +1,26 @@
 #include <Arduino.h>
 
-const int TENS_PIN = 9;
+const int RELAY_CH0 = 7;   // Left
+const int RELAY_CH1 = 8;   // Right
+const int RELAY_CH2 = 9;   // Click
+const int LED_PIN   = 13;
 
-void sendPulses(int count, int pulseWidthMs);
-
-void sendPulses(int count, int pulseWidthMs) {
-    for (int i = 0; i < count; i++) {
-        digitalWrite(TENS_PIN, HIGH);
-        delay(pulseWidthMs);
-        digitalWrite(TENS_PIN, LOW);
-        delay(pulseWidthMs);
-    }
+void stopAll() {
+    digitalWrite(RELAY_CH0, HIGH);
+    digitalWrite(RELAY_CH1, HIGH);
+    digitalWrite(RELAY_CH2, HIGH);
+    digitalWrite(LED_PIN, LOW);
+    Serial.println("STOP");
 }
 
 void setup() {
-    Serial.begin(9600);
-    pinMode(TENS_PIN, OUTPUT);
-    pinMode(LED_BUILTIN, OUTPUT);
-    Serial.println("AGENT SHOCK IS READY");
+    pinMode(RELAY_CH0, OUTPUT);
+    pinMode(RELAY_CH1, OUTPUT);
+    pinMode(RELAY_CH2, OUTPUT); 
+    pinMode(LED_PIN, OUTPUT);
+    stopAll();
+    Serial.begin(115200);
+    Serial.println("READY");
 }
 
 void loop() {
@@ -25,23 +28,29 @@ void loop() {
         String incoming = Serial.readStringUntil('\n');
         incoming.trim();
 
-        int pulseCount = incoming.toInt();
-        if (pulseCount > 0 && pulseCount <= 100) {
-            Serial.print("Firing ");
-            Serial.print(pulseCount);
-            Serial.println(" pulses");
-
-            // Flash LED same number of times as pulses
-            for (int i = 0; i < pulseCount; i++) {
-                digitalWrite(LED_BUILTIN, HIGH);
-                delay(100);
-                digitalWrite(LED_BUILTIN, LOW);
-                delay(100);
-            }
-
-            sendPulses(pulseCount, 10);
-        } else {
-            Serial.println("ERR: invalid value");
+        if (incoming == "L") {
+            stopAll();
+            digitalWrite(RELAY_CH0, LOW);
+            digitalWrite(LED_PIN, HIGH);
+            Serial.println("LEFT ON");
+        }
+        else if (incoming == "R") {
+            stopAll();
+            digitalWrite(RELAY_CH1, LOW);
+            digitalWrite(LED_PIN, HIGH);
+            Serial.println("RIGHT ON");
+        }
+        else if (incoming == "C") {
+            stopAll();
+            digitalWrite(RELAY_CH2, LOW);
+            digitalWrite(LED_PIN, HIGH);
+            Serial.println("CLICK ON");
+        }
+        else if (incoming == "N") {
+            stopAll();
+        }
+        else {
+            Serial.println("ERR: unknown command");
         }
     }
 }
