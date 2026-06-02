@@ -49,7 +49,7 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 | [Subsystem Architecture](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Subsystem-Architecture) | Full system diagram and data flow |
 | [Perception](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Perception) | Screen capture, CNN inference, CV pipeline |
 | [Cognition](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Cognition) | RL agent, reward structure, training |
-| [Middleware](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware) | micro-ROS, serial bridge, MCU comms |
+| [Middleware](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware) | serial bridge, MCU comms |
 | [Actuation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-EMS) | EMS hardware, TENS relay, electrode setup |
 | [Installation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation) | Dependency setup and environment config |
 | [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System) | Step-by-step run instructions |
