@@ -352,8 +352,8 @@ def evaluate(args):
 
     print("\n=== Evaluating saved model (sim, full variance) ===\n")
 
-    observer = SimulatedCNNObserver(screen_w=SCREEN_W)
-    ems      = SimulatedEMSController(observer=observer, std_scale=1.0)
+    # observer = SimulatedCNNObserver(screen_w=SCREEN_W)
+    # ems      = SimulatedEMSController(observer=observer, std_scale=1.0)
     
     env = AimingEnv(
         screen_w=SCREEN_W,
@@ -372,43 +372,51 @@ def evaluate(args):
     all_hits    = []
     all_rewards = []
 
+    # for ep in range(n_eps):
+    #     observer.reset_target()
+    #     last_dx  = 0.0
+    #     total_r  = 0.0
+    #     hits     = 0
+    #     steps    = 0
+    #     max_steps = 300
+    #     while steps < max_steps:
+    #         obs, target_x, cursor_x = observer.get_state(
+    #             last_dx=last_dx,
+    #             pulse_duration_ms=PULSE_DURATION_MS,
+    #         )
+    #         action, _ = model.predict(obs, deterministic=True)
+    #         action_str = ACTION_MAP[int(action)]
+    #         pixel_error = abs(cursor_x - target_x)
+    #         reward = -(pixel_error / SCREEN_W)
+    #         actual_dx = ems.send_action(action_str)
+    #         last_dx   = actual_dx if actual_dx is not None else 0.0
+    #         if action_str == "click":
+    #             if pixel_error < TARGET_RADIUS:
+    #                 reward += 10.0
+    #                 hits   += 1
+    #                 observer.reset_target()
+    #             else:
+    #                 reward -= 2.0
+    #         total_r += reward
+    #         steps   += 1
+    #     all_hits.append(hits)
+    #     all_rewards.append(total_r)
+    #     print(f"  ep {ep+1:2d}: reward={total_r:.1f}  hits={hits}")
+
     for ep in range(n_eps):
-        observer.reset_target()
-        last_dx  = 0.0
-        total_r  = 0.0
-        hits     = 0
-        steps    = 0
-        max_steps = 300
+        obs, _ = env.reset()
+        total_r = 0.0
+        done = False
         env.render()
-
-        while steps < max_steps:
-            obs, target_x, cursor_x = observer.get_state(
-                last_dx=last_dx,
-                pulse_duration_ms=PULSE_DURATION_MS,
-            )
+        while not done:
             action, _ = model.predict(obs, deterministic=True)
-            action_str = ACTION_MAP[int(action)]
-
-            pixel_error = abs(cursor_x - target_x)
-            reward = -(pixel_error / SCREEN_W)
-
-            actual_dx = ems.send_action(action_str)
-            last_dx   = actual_dx if actual_dx is not None else 0.0
-
-            if action_str == "click":
-                if pixel_error < TARGET_RADIUS:
-                    reward += 10.0
-                    hits   += 1
-                    observer.reset_target()
-                else:
-                    reward -= 2.0
-
+            obs, reward, terminated, truncated, info = env.step(int(action))
             total_r += reward
-            steps   += 1
-
-        all_hits.append(hits)
+            env.render()          # <-- per-step render -> clock.tick paces to 60 fps
+            done = terminated or truncated
+        all_hits.append(info["hits"])
         all_rewards.append(total_r)
-        print(f"  ep {ep+1:2d}: reward={total_r:.1f}  hits={hits}")
+        print(f"  ep {ep+1:2d}: reward={total_r:.1f}  hits={info['hits']}  misses={info['misses']}")
 
     print(f"\nMean reward:  {np.mean(all_rewards):.2f}")
     print(f"Mean hits/ep: {np.mean(all_hits):.1f}")
@@ -432,8 +440,6 @@ def test_deploy(args):
     """
     from env.aiming_env import AimingEnv
     from stable_baselines3 import PPO
-    from integration.simulators import SimulatedEMSController
-    from integration.ems_controller import RealEMSController
 
     print("\n=== Test Deployment (AimingEnv + EMS) ===")
     print(f"EMS: {'sim' if args.ems == 'sim' else 'real'}")
@@ -453,10 +459,12 @@ def test_deploy(args):
     if args.ems == "sim":
         # Use sim observer's cursor tracking
         from integration.simulators import SimulatedCNNObserver
+        from integration.simulators import SimulatedEMSController
         sim_observer = SimulatedCNNObserver(screen_w=SCREEN_W)
         ems = SimulatedEMSController(observer=sim_observer, std_scale=1.0)
     else:
         # Real EMS via serial
+        from integration.ems_controller import RealEMSController
         ems = RealEMSController(port="/dev/ttyACM0", baud=9600)
 
     # ── Load model ────────────────────────────────────────────────────────────
@@ -496,6 +504,7 @@ def test_deploy(args):
 
                 # ── Step environment ─────────────────────────────────────────
                 obs, reward, terminated, truncated, info = observer.step(action)
+                observer.render()
                 done = terminated or truncated
 
                 episode_reward += reward
