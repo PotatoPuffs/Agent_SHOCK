@@ -17,7 +17,7 @@ pyautogui.PAUSE = 0
 
 from stable_baselines3 import PPO
 
-# Swap stubs for real implementations when teammates are ready
+# Swap for real implementations when teammates are ready
 from integration.simulators import SimulatedCNNObserver as CNNObserver
 from integration.simulators import SimulatedEMSController as EMSController
 # from perception.cnn_observer import CNNObserver
@@ -59,7 +59,7 @@ def run(args):
             action, _ = model.predict(obs, deterministic=True)
             action_ = ACTION_MAP[int(action)]
 
-           # 3. Update virtual cursor
+           # 3. Update cursor
             if action_ == "left":
                 cursor_x = max(0, cursor_x - STEP_PX)
             elif action_ == "right":
