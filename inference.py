@@ -35,6 +35,7 @@ import torch
 import numpy as np
 from PIL import Image
 import torchvision.transforms as T
+import cv2
 
 # mss: "Multiple ScreenShots" — fastest Python screen capture library.
 # Unlike pyautogui or PIL.ImageGrab, mss directly reads OS screen buffers
@@ -293,6 +294,8 @@ def predict_coordinates(model: AgentShockCNN,
         "ty"      : ty,
         "delta_x" : delta_x,
         "delta_y" : delta_y,
+        "cx_conf": 1.0,   # default — no confidence head in this model
+        "tx_conf": 1.0,   # default — no confidence head in this model
     }
 
 
@@ -338,6 +341,8 @@ def run_inference_loop(callback=None, target_fps: int = 30):
             frame  = capture_frame(sct, CAPTURE_REGION)
             tensor = preprocess_frame(frame)
             coords = predict_coordinates(model, tensor)
+
+            visualise_predictions(frame, coords, FRAME_W, FRAME_H)
 
             # ── Compute current distances ──────────────────────────
             delta_x    = coords["delta_x"]           # signed horizontal
@@ -461,6 +466,54 @@ def rl_agent_callback(game_state: dict) -> int:
         action = 3
 
     return action   # returned so it becomes prev_action next frame
+
+
+def visualise_predictions(frame_pil, perception, frame_w, frame_h):
+    """
+    Draws CNN predictions directly onto the game frame.
+    Shows:
+      Green circle  = predicted crosshair position
+      Red circle    = predicted target position
+      Yellow line   = Δx error (horizontal distance)
+      White text    = confidence scores and error values
+    """
+    # Convert PIL image to OpenCV format
+    frame_bgr = cv2.cvtColor(
+        np.array(frame_pil.resize((frame_w // 2, frame_h // 2))),
+        cv2.COLOR_RGB2BGR
+    )
+
+    # Scale coordinates to the display size (half resolution)
+    scale = 0.5
+    cx = int(perception["cx"] * scale)
+    cy = int(perception["cy"] * scale)
+    tx = int(perception["tx"] * scale)
+    ty = int(perception["ty"] * scale)
+
+    # Draw predicted crosshair — green circle
+    cv2.circle(frame_bgr, (cx, cy), 15, (0, 255, 0), 2)
+    cv2.putText(frame_bgr, "CH", (cx + 10, cy),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+
+    # Draw predicted target — red circle
+    cv2.circle(frame_bgr, (tx, ty), 15, (0, 0, 255), 2)
+    cv2.putText(frame_bgr, "TG", (tx + 10, ty),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+
+    # Draw horizontal error line — yellow
+    cv2.line(frame_bgr, (cx, cy), (tx, cy), (0, 255, 255), 2)
+
+    # Overlay stats text
+    lines = [
+        f"dx={perception['delta_x']:+.1f}px  dy={perception['delta_y']:+.1f}px",
+        f"cx_conf={perception['cx_conf']:.2f}  tx_conf={perception['tx_conf']:.2f}",
+    ]
+    for i, line in enumerate(lines):
+        cv2.putText(frame_bgr, line, (10, 25 + i * 25),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
+    cv2.imshow("Agent Shock — CNN Predictions", frame_bgr)
+    cv2.waitKey(1)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

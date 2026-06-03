@@ -239,7 +239,7 @@ def find_crosshair(game_frame_bgr: np.ndarray):
 # MAIN COLLECTION LOOP
 # ─────────────────────────────────────────────────────────────────────────────
 
-def collect(duration_seconds: int = 120, fps: int = 10):
+def collect(duration_seconds: int = 240, fps: int = 10):
     """
     Main data collection loop — runs for `duration_seconds` capturing frames.
 
@@ -358,7 +358,7 @@ def collect(duration_seconds: int = 120, fps: int = 10):
 
 # ─────────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    # Collect 2 minutes of gameplay at 10fps ≈ 1200 raw frames
+    # Collect 4 minutes of gameplay at 10fps ≈ 1200 raw frames
     # Skipped frames reduce this; a typical run yields 600–900 labelled frames.
     # Run collect() multiple times (sessions append to the same CSV).
-    collect(duration_seconds=120, fps=10)
+    collect(duration_seconds=240, fps=10)
