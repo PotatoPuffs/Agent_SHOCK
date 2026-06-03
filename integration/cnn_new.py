@@ -196,7 +196,7 @@ def _split_rows(val_frac=0.2, seed=0):
 
 
 # ── 2. TRAIN ──────────────────────────────────────────────────────────────────
-def train(epochs=25, batch_size=32, lr=1e-3, val_frac=0.2):
+def train(epochs=50, batch_size=32, lr=1e-3, val_frac=0.2):
     torch, nn, AimingDataset, CoordCNN = _build_torch_bits()
     from torch.utils.data import DataLoader
 

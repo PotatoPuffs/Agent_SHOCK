@@ -90,7 +90,7 @@ def make_observer(cnn_mode: str, ems_sim=None):
     elif cnn_mode == "real":
         # Teammate's implementation — import path agreed in interfacing.py
         # Uncomment when the real observer is ready:
-        from integration.cnn_observer import RealCNNObserver
+        from integration.cnn_new import RealCNNObserver
         return RealCNNObserver(screen_w=SCREEN_W)
         raise NotImplementedError(
             "Real CNN observer not yet connected.\n"
