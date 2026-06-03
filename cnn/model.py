@@ -214,7 +214,7 @@ class AgentShockCNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.Dropout(p=0.3),                             # 30% dropout
 
-            nn.Linear(128, 4),                             # final: [Cx, Cy, Tx, Ty]
+            nn.Linear(128, 2),                             # final: [Cx, Cy, Tx, Ty]
             nn.Sigmoid(),                                  # constrain output to (0,1)
         )
 

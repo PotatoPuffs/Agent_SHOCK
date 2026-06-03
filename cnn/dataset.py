@@ -211,9 +211,9 @@ class AimingProDataset(Dataset):
         # torch.tensor() converts a Python list → 1D float32 tensor of shape (4,)
         # float() cast ensures we handle both int and float CSV values correctly.
         coords = torch.tensor(
-            [float(row["cx_norm"]),   # crosshair x, normalised
-             float(row["cy_norm"]),   # crosshair y, normalised
-             float(row["tx_norm"]),   # target    x, normalised
+            # [float(row["cx_norm"]),   # crosshair x, normalised
+            #  float(row["cy_norm"]),   # crosshair y, normalised
+            [float(row["tx_norm"]),   # target    x, normalised
              float(row["ty_norm"])],  # target    y, normalised
             dtype=torch.float32
         )
@@ -279,11 +279,16 @@ def build_dataloaders(csv_path: str,
     # manual_seed(42) makes the split reproducible across runs —
     # the same frames are always in train / val regardless of how many times
     # you restart training. Critical for fair comparison between experiments.
-    train_set, val_set = random_split(
-        full_dataset,
-        [n_train, n_val],
-        generator=torch.Generator().manual_seed(42)
-    )
+    # train_set, val_set = random_split(
+    #     full_dataset,
+    #     [n_train, n_val],
+    #     generator=torch.Generator().manual_seed(42)
+    # )
+
+    train_dataset = AimingProDataset(csv_path, frames_dir, transform=TRAIN_TRANSFORMS)
+    val_dataset   = AimingProDataset(csv_path, frames_dir, transform=EVAL_TRANSFORMS)
+    train_set, _ = random_split(train_dataset, [n_train, n_val], generator=torch.Generator().manual_seed(42))
+    _, val_set   = random_split(val_dataset,   [n_train, n_val], generator=torch.Generator().manual_seed(42))
 
     # ── Override validation transforms ───────────────────────────────
     # random_split returns Subset objects that share the underlying Dataset.
@@ -296,7 +301,7 @@ def build_dataloaders(csv_path: str,
     # For a fully correct split, you'd create two separate Dataset instances.
     # For this project the difference is minor — augmentation on val slightly
     # reduces reported val loss but doesn't affect training stability.
-    val_set.dataset.transform = EVAL_TRANSFORMS
+    # val_set.dataset.transform = EVAL_TRANSFORMS
 
     # ── Build DataLoaders ─────────────────────────────────────────────
     #

@@ -513,6 +513,7 @@ import cv2
 # in BGRA format without going through GUI APIs → ~30-60 FPS on most systems.
 import mss
 
+from cnn.collect_data import GAME_HEIGHT, GAME_WIDTH
 from model import AgentShockCNN
 
 
@@ -523,7 +524,7 @@ from model import AgentShockCNN
 MODEL_PATH = "cnn/checkpoints/best_cnn.pth"  # saved by train.py
 
 FRAME_W    = 1920   # actual game/screen resolution (used to de-normalise coords)
-FRAME_H    = 1080
+FRAME_H    = 1200
 
 INPUT_H    = 224    # CNN input size — MUST match CONFIG in train.py
 INPUT_W    = 224    # changing this requires re-training
@@ -743,10 +744,12 @@ def predict_coordinates(model: AgentShockCNN,
 
     # Denormalise: multiply by screen resolution to get pixel coordinates
     # output order: [Cx_norm, Cy_norm, Tx_norm, Ty_norm]
-    cx = float(output[0]) * FRAME_W    # crosshair x in pixels
-    cy = float(output[1]) * FRAME_H    # crosshair y in pixels
-    tx = float(output[2]) * FRAME_W    # target    x in pixels
-    ty = float(output[3]) * FRAME_H    # target    y in pixels
+    # cx = float(output[0]) * FRAME_W    # crosshair x in pixels
+    # cy = float(output[1]) * FRAME_H    # crosshair y in pixels
+    cx = GAME_WIDTH  / 2
+    cy = GAME_HEIGHT / 2
+    tx = float(output[0]) * FRAME_W    # target    x in pixels
+    ty = float(output[1]) * FRAME_H    # target    y in pixels
 
     # ── Coordinate Difference — core output sent to the RL agent ──────
     # Δx > 0 : target is to the RIGHT of crosshair → stimulate rightward

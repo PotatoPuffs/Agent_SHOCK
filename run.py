@@ -198,6 +198,7 @@ def deploy_loop(model, observer, ems):
                 # Real EMS — only send on action change, relay maintains state
                 if action_str != last_action_sent:
                     ems.send_action(action_str)
+                    print(f"\nSent EMS command: {action_str}")
                     last_action_sent = action_str
                 last_dx = 0.0
 

@@ -111,11 +111,8 @@ def compute_pixel_error(pred: torch.Tensor,
     # scale tensor: [frame_w, frame_h, frame_w, frame_h]
     # x-columns (0, 2) get multiplied by frame_w
     # y-columns (1, 3) get multiplied by frame_h
-    scale = torch.tensor(
-        [frame_w, frame_h, frame_w, frame_h],
-        device=pred.device, dtype=torch.float32
-    )
-
+    scale = torch.tensor([frame_w, frame_h],device=pred.device, dtype=torch.float32)
+    
     # Element-wise absolute error, then multiply by pixel scale
     pixel_err = (pred - target).abs() * scale   # (B, 4) — errors in pixels
 
