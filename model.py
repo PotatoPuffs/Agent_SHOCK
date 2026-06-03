@@ -3,22 +3,13 @@ model.py — CNN Architecture for Agent Shock
 ============================================
 "The Eyes" of the Agent Shock system.
 
-WHAT THIS FILE DOES:
-  Defines the AgentShockCNN — a custom Convolutional Neural Network that
+File Summary:
+  Defines the AgentShockCNN — a custom CNN that
   takes a raw game frame (screenshot of Aiming.Pro) and outputs the
   NORMALISED PIXEL COORDINATES of both the crosshair and the target:
 
       Input  : (batch_size, 3, H, W)   — RGB frame tensor
       Output : (batch_size, 4)         — [Cx_norm, Cy_norm, Tx_norm, Ty_norm]
-
-  This is a REGRESSION task (predict exact coordinates), NOT a classification
-  task (cat vs dog). That distinction drives every architectural choice below.
-
-HOW IT FITS INTO AGENT SHOCK:
-  ┌─────────────┐    ┌─────────────────┐    ┌──────────────┐
-  │  Game Frame │───▶│ AgentShockCNN   │───▶│  Δx = Tx-Cx  │───▶ RL Agent
-  │ (screenshot)│    │ (this file)     │    │  Δy = Ty-Cy  │     → EMS pulse
-  └─────────────┘    └─────────────────┘    └──────────────┘
 
 KEY LIBRARY: torch.nn
   torch.nn.Module  — base class for ALL neural network models in PyTorch.
@@ -43,21 +34,9 @@ import torch.nn as nn   # nn = neural network module — all layer types live he
 class AgentShockCNN(nn.Module):
     """
     Custom CNN for coordinate regression on Aiming.Pro game frames.
-
-    Why a CUSTOM CNN (not ResNet / VGG)?
-      Pre-trained models are trained on ImageNet photos (cats, cars, people).
-      Our task is geometrically simple — detect two coloured objects and
-      return their centres. A lightweight custom CNN converges faster, runs
-      in real-time, and doesn't need millions of ImageNet parameters.
-
     Architecture: two stages
       1. Feature Extraction  — convolutional blocks scan the frame spatially
       2. Position Regression — fully-connected layers map features → coordinates
-
-    Tutorial link:
-      This follows the same pattern as Tutorial 08 where torchvision models
-      (FasterRCNN, FCN) each have a feature backbone followed by a task head.
-      Here WE define both the backbone (self.features) and head (self.regressor).
     """
 
     def __init__(self, input_height=224, input_width=224):
@@ -65,10 +44,6 @@ class AgentShockCNN(nn.Module):
         __init__: called once when you write  model = AgentShockCNN()
         Registers all layers as PyTorch submodules so their parameters are
         tracked for gradient computation during training.
-
-        Args:
-            input_height (int): frame height fed to the model (default 224)
-            input_width  (int): frame width  fed to the model (default 224)
         """
 
         # MUST call super().__init__() first — initialises nn.Module internals
@@ -79,46 +54,11 @@ class AgentShockCNN(nn.Module):
         # ─────────────────────────────────────────────────────────────
         # STAGE 1 — FEATURE EXTRACTION (Convolutional Backbone)
         # ─────────────────────────────────────────────────────────────
-        #
-        # What is a convolution?
-        #   A small filter (e.g. 3×3 weights) slides across the entire image.
-        #   At each position it computes a dot product with the local patch.
-        #   The result is a "feature map" — bright where the filter pattern
-        #   matches the image content, dark where it doesn't.
-        #
-        # nn.Conv2d(in_channels, out_channels, kernel_size, padding)
-        #   in_channels  : how many channels enter this layer
-        #                  (3 = RGB for the very first layer)
-        #   out_channels : how many different filters to learn
-        #                  (= number of output feature maps)
-        #   kernel_size  : size of the sliding filter window — 3 = 3×3 pixels
-        #   padding=1    : adds a 1-pixel border of zeros so that the spatial
-        #                  size (H, W) is PRESERVED through the conv layer
-        #
-        # nn.BatchNorm2d(num_features)
-        #   Normalises each feature map's activations to have mean≈0, std≈1.
-        #   This stabilises training — gradients don't vanish or explode.
-        #   In Tutorial 08 you saw how transforms normalise pixel values;
-        #   BatchNorm does the same thing INSIDE the network, dynamically.
-        #
-        # nn.ReLU(inplace=True)
-        #   Activation function: f(x) = max(0, x)
-        #   Introduces non-linearity — without activations every layer is just
-        #   a matrix multiply, and stacking them collapses to a single layer.
-        #   inplace=True: modifies the tensor in-memory (saves a copy → faster).
-        #
-        # nn.MaxPool2d(kernel_size=2, stride=2)
-        #   Slides a 2×2 window across the feature map and keeps ONLY the
-        #   maximum value in each window.
-        #   Effect: halves both H and W  →  (H, W) → (H/2, W/2)
-        #   Why?  Reduces computation, creates spatial invariance (the model
-        #   still detects a red blob whether it's at pixel 100 or 102).
-
+        
         self.features = nn.Sequential(
 
             # ── Block 1: Detect low-level edges and colour boundaries ──────
             # The very first conv layer sees raw RGB pixels.
-            # It learns filters like "horizontal edge", "red region boundary".
             # Input shape : (B,  3, H,   W  )
             # Output shape: (B, 16, H/2, W/2)  — after MaxPool
             nn.Conv2d(in_channels=3,  out_channels=16, kernel_size=3, padding=1),
@@ -144,8 +84,6 @@ class AgentShockCNN(nn.Module):
 
             # ── Block 3: Detect high-level spatial structure ───────────────
             # Where in the frame is the target? Where is the crosshair?
-            # These feature maps encode "there is a target-like thing at
-            # this spatial position in the map".
             # Input shape : (B, 32, H/4, W/4)
             # Output shape: (B, 64, H/8, W/8)
             nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
@@ -158,7 +96,6 @@ class AgentShockCNN(nn.Module):
         )
         # After three MaxPool layers:  224 → 112 → 56 → 28
         # Final feature volume shape:  (B, 64, 28, 28)
-
 
         # ── Automatically compute flat size via a dummy forward pass ───────
         # Rather than manually computing 64 × 28 × 28 = 50,176, we let
@@ -179,29 +116,6 @@ class AgentShockCNN(nn.Module):
         # (channels × height × width). We flatten this to a 1D vector and
         # pass through dense layers that learn:
         #   "given these spatial features, output 4 coordinate values"
-        #
-        # nn.Flatten()
-        #   Collapses all dimensions except batch into one:
-        #   (B, 64, 28, 28) → (B, 50176)
-        #
-        # nn.Linear(in_features, out_features)
-        #   Fully-connected layer: output = input × W^T + b
-        #   Every input neuron connects to every output neuron.
-        #   This is where spatial feature positions get combined into
-        #   precise coordinate estimates.
-        #
-        # nn.Dropout(p)
-        #   During TRAINING: randomly zeroes p% of neuron outputs each
-        #   forward pass. Forces the network to not rely on any one neuron
-        #   → prevents over-fitting on small datasets.
-        #   During INFERENCE (model.eval()): dropout is automatically disabled.
-        #
-        # nn.Sigmoid()
-        #   Maps any real number → (0, 1):  σ(x) = 1 / (1 + e^(-x))
-        #   We use this as the FINAL activation so that the 4 output values
-        #   are always valid normalised coordinates in [0, 1].
-        #   (No sigmoid → outputs could be negative or > 1, which is invalid
-        #    for coordinates that should be fractions of frame size.)
 
         self.regressor = nn.Sequential(
             nn.Flatten(),                                  # (B,64,28,28)→(B,50176)

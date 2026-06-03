@@ -15,11 +15,6 @@ WHAT THIS FILE DOES:
               │
       (frames_tensor, coords_tensor)   ← what train.py receives each step
 
-TUTORIAL LINK (Tutorial 08):
-  In Tutorial 08 you saw:
-    transforms = weights.transforms()          # torchvision built-in pipeline
-    inputs = [transforms(d) for d in image_list]
-    batch_input = torch.stack([transforms(d) for d in image_list])
 
   Here WE define the transform pipeline manually (TRAIN_TRANSFORMS / EVAL_TRANSFORMS)
   and wrap it in a Dataset + DataLoader instead of a plain list, so PyTorch can
@@ -135,16 +130,6 @@ EVAL_TRANSFORMS = T.Compose([
 class AimingProDataset(Dataset):
     """
     Custom PyTorch Dataset for labelled Aiming.Pro screenshots.
-
-    TUTORIAL LINK:
-      In Tutorial 08, data was loaded as a plain Python list of PIL Images:
-          image_list = [read_image(...) for ...]
-          inputs = [transforms(d) for d in image_list]
-      For training we need something smarter:
-        • Lazy loading (only read a frame when it's needed, not all at once)
-        • Random access by index (DataLoader calls __getitem__(random_index))
-        • Automatic batching (DataLoader groups __getitem__ calls into tensors)
-      Dataset + DataLoader provides all of this.
 
     Two methods are REQUIRED by PyTorch's Dataset interface:
       __len__      : how many samples exist?

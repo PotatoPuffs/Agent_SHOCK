@@ -12,16 +12,6 @@ WHAT THIS FILE DOES:
       Δy = Ty - Cy   (signed vertical error   → positive means target is BELOW)
   These values are passed to the RL agent which decides the EMS pulse action.
 
-TUTORIAL LINK (Tutorial 08):
-  The Tutorial 08 pattern for inference was:
-      model = fasterrcnn_resnet50_fpn(weights=weights)
-      model = model.eval()           # switch to inference mode
-      with torch.no_grad():          # disable gradient tracking
-          outputs = model(inputs)    # forward pass
-
-  We follow exactly the same pattern, just with our custom AgentShockCNN
-  and a real-time screen capture loop instead of a static image list.
-
 KEY LIBRARIES:
   mss            — ultra-fast cross-platform screen capture (pip install mss)
                    directly accesses OS display buffers → ~30-60 FPS
@@ -36,10 +26,6 @@ import numpy as np
 from PIL import Image
 import torchvision.transforms as T
 import cv2
-
-# mss: "Multiple ScreenShots" — fastest Python screen capture library.
-# Unlike pyautogui or PIL.ImageGrab, mss directly reads OS screen buffers
-# in BGRA format without going through GUI APIs → ~30-60 FPS on most systems.
 import mss
 
 from model import AgentShockCNN
@@ -96,35 +82,6 @@ def load_model(model_path: str) -> AgentShockCNN:
     """
     Loads a trained AgentShockCNN from a checkpoint file (.pth).
 
-    TUTORIAL LINK:
-      In Tutorial 08 you loaded pre-trained weights with:
-          model = fasterrcnn_resnet50_fpn(weights=weights)
-      Here we load OUR trained weights using torch.load + load_state_dict:
-          checkpoint = torch.load(path)           # deserialise the dict
-          model.load_state_dict(checkpoint["model_state"])  # copy weights in
-
-    torch.load()
-      Deserialises the checkpoint dict that train.py saved with torch.save().
-      map_location=DEVICE ensures weights load to the correct device even
-      if the model was trained on GPU but we're now running on CPU (or vice versa).
-
-    model.load_state_dict()
-      Copies the saved weight tensors into the model's matching parameter slots.
-      The keys must match — this is why we save model.state_dict() (not the
-      whole model object) and reconstruct AgentShockCNN with the same architecture.
-
-    model.eval()
-      MUST be called before inference. Switches off:
-        • Dropout (would randomly zero neurons → non-deterministic output)
-        • BatchNorm training mode (would use batch statistics → unstable output)
-      Without this, running the same frame twice gives different coordinates.
-      In Tutorial 08 every model was set to .eval() before inference.
-
-    Args:
-        model_path : path to checkpoint file (e.g. "checkpoints/best_cnn.pth")
-
-    Returns:
-        model : AgentShockCNN in eval mode, weights loaded, on DEVICE
     """
     # Load the full checkpoint dictionary saved by train.py
     checkpoint = torch.load(model_path, map_location=DEVICE)
@@ -153,27 +110,6 @@ def capture_frame(sct: mss.mss, region: dict) -> Image.Image:
     """
     Captures a screenshot of the specified screen region using mss.
 
-    mss.grab(region)
-      Returns a ScreenShot object containing raw pixel data in BGRA format
-      (Blue-Green-Red-Alpha — note the reversed channel order vs RGB).
-      Reading directly from the OS frame buffer makes this ~5× faster than
-      PIL.ImageGrab.grab() which goes through GDI/X11 APIs.
-
-    Image.frombytes()
-      Constructs a PIL Image from the raw byte buffer.
-      We decode "BGRX" (Blue-Green-Red-ignore_Alpha) and output "RGB".
-
-    Why reuse the same sct context?
-      Opening a new mss context (mss.mss()) each call re-initialises the
-      OS screen reader. Reusing one context across the loop avoids that
-      overhead and maintains ~60 FPS capture.
-
-    Args:
-        sct    : mss.mss() context (created once in run_inference_loop)
-        region : {"top": Y, "left": X, "width": W, "height": H}
-
-    Returns:
-        PIL.Image.Image in RGB mode
     """
     screenshot = sct.grab(region)   # raw BGRA pixel buffer from OS
     img = Image.frombytes(
@@ -229,12 +165,6 @@ def predict_coordinates(model: AgentShockCNN,
                          frame_tensor: torch.Tensor) -> dict:
     """
     Runs one CNN forward pass and converts normalised outputs → pixel errors.
-
-    TUTORIAL LINK:
-      Tutorial 08 inference pattern — replicated here:
-          model.eval()                          # done once in load_model()
-          with torch.no_grad():                 # disable gradient tracking
-              outputs = model(inputs)           # forward pass
 
     torch.no_grad()
       Context manager: temporarily disables autograd's computation graph.

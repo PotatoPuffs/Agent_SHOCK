@@ -11,11 +11,7 @@ WHAT THIS FILE DOES:
     3. Detects the crosshair position (centre or green-pixel search)
     4. Saves the frame as a PNG and records normalised coordinates to CSV
 
-TUTORIAL LINK (Tutorial 08):
-  In Tutorial 08 all images were loaded manually:
-      image_list = [read_image("humans/man_1.jpg"), ...]
-  Here we AUTOMATICALLY generate a labelled dataset by leveraging the game's
-  known visual properties:
+  Here we AUTOMATICALLY generate a labelled dataset:
     • Targets are bright RED spheres on a dark blue background
       → reliably detectable via HSV colour threshold (no manual labelling)
     • Crosshair is always near screen centre in this drill
@@ -63,18 +59,10 @@ GAME_HEIGHT = 1090   # FRAME_H - GAME_TOP
 # ─────────────────────────────────────────────────────────────────────────────
 # RED TARGET: HSV COLOUR RANGE
 # ─────────────────────────────────────────────────────────────────────────────
-#
-# WHY HSV instead of RGB?
-#   RGB mixes colour (hue) and brightness (value) together.
-#   A dark red (64,0,0) and a bright red (255,100,100) have very different RGB
-#   values but similar HSV hue values.
-#   HSV separates Hue (what colour?) from Saturation (how vivid?) and Value
-#   (how bright?). This makes colour thresholding much more robust.
-#
 # OpenCV HSV scale: H∈[0,179], S∈[0,255], V∈[0,255]
 # (OpenCV halves the standard 360° hue to fit in uint8)
 #
-# Red wraps around 0°/360° on the hue wheel, so we need TWO ranges:
+# Red wraps around 0°/360° on the hue wheel, need TWO ranges:
 #   Lower red range: H ∈ [0, 15]    (0° → orange-red)
 #   Upper red range: H ∈ [160, 179] (320° → magenta-red)
 # We OR the two masks together to capture all shades of red.
@@ -105,7 +93,7 @@ def find_target(hsv_frame: np.ndarray):
     WHY NEAREST?
       Multiple red targets appear on screen simultaneously. The target that
       matters for training is the one closest to the crosshair (the one the
-      player should currently be aiming at). Nearest-to-centre is a good proxy.
+      player should currently be aiming at).
 
     How it works:
       1. cv2.inRange() creates a binary mask: 255 where pixel ∈ [lower,upper],
@@ -182,7 +170,7 @@ def find_crosshair(game_frame_bgr: np.ndarray):
     """
     Finds the crosshair (+) position in the game frame.
 
-    Strategy:
+    Process:
       The crosshair is a small bright green/white + symbol always near the
       centre of the game viewport in drill #52502. We:
         1. Crop a small 60×60 region around the viewport centre.
