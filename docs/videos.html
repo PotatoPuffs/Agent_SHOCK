@@ -252,7 +252,6 @@
     <button class="filter-btn" onclick="filter('full', this)">Full System</button>
     <button class="filter-btn" onclick="filter('rl', this)">RL / Cognition</button>
     <button class="filter-btn" onclick="filter('hw', this)">Hardware</button>
-    <button class="filter-btn" onclick="filter('cv', this)">Perception</button>
   </div>
 
   <!-- VIDEO GRID -->
@@ -318,27 +317,8 @@
       </div>
     </div>
 
-    <!-- CARD 4 -->
-    <div class="video-card" data-tag="cv" onclick="openModal('perception-test')">
-      <div class="video-thumb">
-        <div class="thumb-placeholder" style="background: linear-gradient(135deg, #001a0d, #003020);">
-          <span class="thumb-icon">👁</span>
-          <span class="thumb-label">CV Pipeline</span>
-        </div>
-        <div class="play-overlay">▶</div>
-      </div>
-      <div class="video-info">
-        <span class="vtag vtag-cv" style="margin-left:4px;">Perception</span> 
-        <div class="v-title">Perception Pipeline Demo</div>
-        <div class="v-desc">Real-time CNN inference with visual overlay on the game screen. Green circle = predicted crosshair, red circle = predicted target, yellow line = Δx error vector between them.</div>
-        <div class="v-footer">
-          <span class="v-owner">Amadee Thotawatta</span>
-          <!-- <span class="v-status soon">Coming soon</span> -->
-        </div>
-      </div>
-    </div>
 
-    <!-- CARD 5 -->
+    <!-- CARD 4 -->
     <div class="video-card" data-tag="hw" onclick="openModal('arduino-serial')">
       <div class="video-thumb">
         <div class="thumb-placeholder" style="background: linear-gradient(135deg, #1a0a00, #3a1a00);">
@@ -415,7 +395,6 @@
     'full-demo':       { title: 'Full System Demo', desc: 'Complete closed-loop demo: EMS + RL agent playing aiming.pro in real time.', url: 'https://www.youtube.com/embed/M8UZAG9WGtw?rel=0' },
     'sim-play':        { title: 'Agent Playing in Simulation', desc: 'Trained PPO agent in the custom Gym environment tracking a moving target.', url: 'https://www.youtube.com/embed/BFJUujmITwM?rel=0' },
     'ems-test':        { title: 'EMS Arm Actuation Test', desc: 'Hardware test — TENS relay + forearm contraction. Electrode placement and safety setup.', url: 'https://www.youtube.com/embed/DjC1QXUHFy4?rel=0' },
-    'perception-test': { title: 'Perception Pipeline Demo', desc: 'Screen capture + CNN model identifying the target in real time with debug overlay.', url: 'https://www.youtube.com/embed/g8tNFWymkP8?rel=0'},
     'arduino-serial':  { title: 'Arduino Serial Communication', desc: 'Running serial_test.py script to interact with Arduino relay. Space bar acting as the toggle', url: 'https://www.youtube.com/embed/ouvMvleVNZI?rel=0'},
   };
 
