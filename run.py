@@ -515,8 +515,11 @@ def test_deploy(args):
                 total_frames += 1
 
                 # ── Track error ───────────────────────────────────────────────
-                if "error" in info:
-                    episode_errors.append(info["error"])
+                # if "error" in info:
+                #     episode_errors.append(info["error"])
+
+                if "pixel_error" in info:
+                    episode_errors.append(info["pixel_error"])
 
                 # ── Track hits ────────────────────────────────────────────────
                 if "hits" in info:
@@ -550,6 +553,135 @@ def test_deploy(args):
     print(f"  EMS type:             {args.ems}")
     print()
 
+# ── Full evaluation ───────────────────────────────────────────────────────────
+
+def _make_heuristic(env):
+    """Hand-coded baseline: step toward the target, click when inside radius."""
+    sw, r = env.screen_w, env.target_radius
+    def policy(obs):
+        signed_err_px = obs[0] * sw          # obs[0] = (cursor - target)/screen_w
+        if abs(signed_err_px) < r:
+            return 2                          # click
+        return 0 if signed_err_px > 0 else 1  # cursor right of target -> left, else right
+    return policy
+
+
+def _run_episode(env, policy, max_steps):
+    """Run one episode, return per-episode logs. Drives env.step() for reward fidelity."""
+    obs, _ = env.reset()
+    log = {"reward": 0.0, "click_errors": [], "times_to_hit": [],
+           "action_counts": {0: 0, 1: 0, 2: 0}}
+    steps_since_spawn = 0
+    done = False
+    info = {}
+    while not done:
+        action = int(policy(obs))
+        obs, reward, terminated, truncated, info = env.step(action)
+        log["reward"] += reward
+        log["action_counts"][action] += 1
+        steps_since_spawn += 1
+        if info.get("hit") or info.get("miss"):
+            log["click_errors"].append(info["pixel_error"])   # error at moment of click
+        if info.get("hit"):
+            log["times_to_hit"].append(steps_since_spawn)      # spawn -> hit latency
+            steps_since_spawn = 0                              # new target spawned on hit
+        done = terminated or truncated
+    log["hits"]       = info.get("hits", 0)
+    log["misses"]     = info.get("misses", 0)
+    log["total_stim"] = info.get("total_stim", 0)
+    return log
+
+
+def _aggregate_seed(env, policy, n_eps, max_steps):
+    """Pool n_eps episodes for one seed into a single metrics dict."""
+    rewards, hits = [], []
+    hit_tot = miss_tot = stim_tot = 0
+    click_errs, tth = [], []
+    acts = {0: 0, 1: 0, 2: 0}
+
+    for _ in range(n_eps):
+        ep = _run_episode(env, policy, max_steps)
+        rewards.append(ep["reward"]); hits.append(ep["hits"])
+        hit_tot  += ep["hits"]; miss_tot += ep["misses"]; stim_tot += ep["total_stim"]
+        click_errs += ep["click_errors"]; tth += ep["times_to_hit"]
+        for k in acts: acts[k] += ep["action_counts"][k]
+
+    clicks = hit_tot + miss_tot
+    return {
+        "mean_reward":    float(np.mean(rewards)),
+        "mean_hits":      float(np.mean(hits)),
+        "accuracy":       hit_tot / clicks   if clicks  else 0.0,   # hits / clicks
+        "clicks_per_hit": clicks  / hit_tot  if hit_tot else float("nan"),
+        "stim_per_hit":   stim_tot / hit_tot if hit_tot else float("nan"),
+        "click_err_mean": float(np.mean(click_errs))        if click_errs else float("nan"),
+        "click_err_p90":  float(np.percentile(click_errs, 90)) if click_errs else float("nan"),
+        "time_to_hit":    float(np.mean(tth))               if tth        else float("nan"),
+    }
+
+
+def evaluate_full(args):
+    """Multi-seed evaluation with proper metrics + baselines, reported as mean ± std."""
+    import random
+    from env.aiming_env import AimingEnv
+    from stable_baselines3 import PPO
+
+    n_seeds, n_eps, max_steps = args.seeds, args.episodes, 300
+
+    def make_env():
+        return AimingEnv(
+            screen_w=SCREEN_W, max_steps=max_steps,
+            target_radius=TARGET_RADIUS, pulse_duration_ms=PULSE_DURATION_MS,
+            std_scale=1.0,   # full variance — evaluate under realistic EMS noise
+        )
+
+    model = PPO.load(MODEL_PATH)
+
+    # policy builders: take env, return a callable obs -> action
+    policy_builders = {
+        "PPO (trained)": lambda env: (lambda obs: int(model.predict(obs, deterministic=True)[0])),
+    }
+    if args.baselines:
+        policy_builders["Random"]    = lambda env: (lambda obs: env.action_space.sample())
+        policy_builders["Heuristic"] = _make_heuristic
+
+    print(f"\n=== Full evaluation — {n_seeds} seeds x {n_eps} eps "
+          f"({n_seeds * n_eps} episodes/policy, std_scale=1.0) ===\n")
+
+    metric_keys = ["mean_reward", "mean_hits", "accuracy", "clicks_per_hit",
+                   "stim_per_hit", "click_err_mean", "click_err_p90", "time_to_hit"]
+
+    results = {}
+    for name, build in policy_builders.items():
+        per_seed = []
+        for seed in range(n_seeds):
+            random.seed(seed); np.random.seed(seed)
+            env = make_env()
+            env.action_space.seed(seed)
+            per_seed.append(_aggregate_seed(env, build(env), n_eps, max_steps))
+            env.close()
+        # mean ± std across seeds
+        results[name] = {k: (np.mean([s[k] for s in per_seed]),
+                             np.std([s[k] for s in per_seed])) for k in metric_keys}
+
+    # ── print table ───────────────────────────────────────────────────────────
+    labels = {
+        "mean_reward": "Reward/ep", "mean_hits": "Hits/ep", "accuracy": "Accuracy",
+        "clicks_per_hit": "Clicks/hit", "stim_per_hit": "Pulses/hit",
+        "click_err_mean": "ClickErr px", "click_err_p90": "ClickErr p90",
+        "time_to_hit": "Steps/hit",
+    }
+    name_w = max(len(n) for n in results)
+    header = f"{'Metric':<14}" + "".join(f"{n:>{name_w + 14}}" for n in results)
+    print(header); print("-" * len(header))
+    for k in metric_keys:
+        row = f"{labels[k]:<14}"
+        for n in results:
+            m, s = results[n][k]
+            row += f"{m:>{name_w + 6}.2f} ± {s:<5.2f}"
+        print(row)
+    print()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Agent SHOCK — unified runner")
 
@@ -573,6 +705,9 @@ if __name__ == "__main__":
         "--render", action="store_true",
         help="train only — show pygame window (slower)",
     )
+    parser.add_argument("--seeds",    type=int, default=5,  help="eval only — number of seeds")
+    parser.add_argument("--episodes", type=int, default=10, help="eval only — episodes per seed")
+    parser.add_argument("--baselines", action="store_true", help="eval only — include Random + Heuristic baselines")
 
     args = parser.parse_args()
 
@@ -580,7 +715,7 @@ if __name__ == "__main__":
         train(args)
 
     elif args.mode == "eval":
-        evaluate(args)
+        evaluate_full(args)
 
     elif args.mode == "deploy":
         from stable_baselines3 import PPO
