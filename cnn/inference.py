@@ -513,7 +513,7 @@ import cv2
 # in BGRA format without going through GUI APIs → ~30-60 FPS on most systems.
 import mss
 
-from cnn.collect_data import GAME_HEIGHT, GAME_WIDTH
+from collect_data import GAME_HEIGHT, GAME_WIDTH
 from model import AgentShockCNN
 
 
@@ -746,8 +746,8 @@ def predict_coordinates(model: AgentShockCNN,
     # output order: [Cx_norm, Cy_norm, Tx_norm, Ty_norm]
     # cx = float(output[0]) * FRAME_W    # crosshair x in pixels
     # cy = float(output[1]) * FRAME_H    # crosshair y in pixels
-    cx = GAME_WIDTH  / 2
-    cy = GAME_HEIGHT / 2
+    cx = 960
+    cy = 600
     tx = float(output[0]) * FRAME_W    # target    x in pixels
     ty = float(output[1]) * FRAME_H    # target    y in pixels
 
