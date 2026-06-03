@@ -1,66 +1,52 @@
 # Agent_SHOCK ⚡
 
-**Human-robot hybrid aiming system**: an Reinforced Learning (RL) agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
+**Human-robot hybrid aiming system** — an RL agent trained to control a cursor via Electrical Muscle Stimulation (EMS).
 
-> 🧠 Built by the **Pixel Fairies** for _AI in Robotics_
-
----
-
-## Project Context
-
-Agent_SHOCK is a computer interface system where an agent learns to aim a cursor at targets in a browser-based game [aiming.pro](https://aiming.pro/app#/training/drills/52502) → then actuates a real human arm using a TENS/EMS device to physically move the mouse.
-
-The system is split into four subsystems: **Perception**, **Cognition**, **Middleware** and **Actuation** — detailed documentation for each lives in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki).
+> 🧠 Built by the **Pixel Fairies**
 
 ---
 
-## Repository Structure
+## Branch Structure
 
-```
-Agent_SHOCK/
-├── env/
-│   ├── aiming_env.py        ← Custom Gym environment (sim / screen / real modes)
-│   └── ems_controller.ino   ← Arduino firmware (MCU relay control)
-├── scripts/
-│   ├── train.py             ← RL training loop (PPO via Stable-Baselines3)
-│   └── screen_agent.py      ← Live agent against real browser game
-└── requirements.txt
-```
-
----
-
-## Quick Start
-
-See the Wiki for full setup and usage guides:
-
-- 📦 [Installation Guide](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation)
-- 🏃 [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System)
-- ⚡ [EMS / Hardware Setup](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-The-Muscles)
-
----
-
-## Documentation (Wiki)
-
-Full project documentation is maintained in the [Wiki](https://github.com/PotatoPuffs/Agent_SHOCK/wiki):
-
-| Page | Description |
+| Branch | Purpose |
 |---|---|
-| [Project Overview](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Project-Overview) | What Agent_SHOCK is, goals and architecture summary |
-| [Subsystem Architecture](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Subsystem-Architecture) | Full system diagram and data flow |
-| [Perception](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Perception) | Screen capture, CNN inference, CV pipeline |
-| [Cognition](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Cognition) | RL agent, reward structure, training |
-| [Middleware](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware) | serial bridge, MCU comms |
-| [Actuation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-EMS) | EMS hardware, TENS relay, electrode setup |
-| [Installation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation) | Dependency setup and environment config |
-| [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System) | Step-by-step run instructions |
-| [Team](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) | The Pixel Fairies |
+| `main` | Portfolio website (`docs/`) — hosted via GitHub Pages |
+| `integration_rl_agent` | Full project code — all subsystems, run modes, integration |
+| `cnn` | CNN perception pipeline — model, training, data collection, inference |
+
+**The code lives on `integration_rl_agent`. Clone that branch to run the system.**
 
 ---
 
 ## Portfolio & Demo
 
-- 🌐 **Project Website:** https://potatopuffs.github.io/Agent_SHOCK 
-- 🎥 **Demo Video:** https://potatopuffs.github.io/Agent_SHOCK/videos.html
+- 🌐 **Project Website:** https://potatopuffs.github.io/Agent_SHOCK
+- 🐙 **GitHub:** https://github.com/PotatoPuffs/Agent_SHOCK
+
+---
+
+## Quick Start
+
+See the [`integration_rl_agent` branch](https://github.com/PotatoPuffs/Agent_SHOCK/tree/integration_rl_agent) and the Wiki for full setup:
+
+- 📦 [Installation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation)
+- 🏃 [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System)
+
+---
+
+## Documentation (Wiki)
+
+| Page | Description |
+|---|---|
+| [Project Overview](https://github.com/PotatoPuffs/Agent_SHOCK/wiki#Project-Overview) | What Agent_SHOCK is, goals, and architecture summary |
+| [Subsystem Architecture](https://github.com/PotatoPuffs/Agent_SHOCK/wiki#Subsystem-Architecture) | Full system diagram and data flow |
+| [Perception](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Perception) | Screen capture, CNN inference, CV pipeline |
+| [Cognition](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Reinforced-Learning-Agent) | RL agent, reward structure, training |
+| [Middleware](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Middleware) | micro-ROS, serial bridge, MCU comms |
+| [Actuation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Actuation-EMS) | EMS hardware, TENS relay, electrode setup |
+| [Installation](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Installation) | Dependency setup and environment config |
+| [Running the System](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Running-the-System) | Step-by-step run instructions |
+| [Team](https://github.com/PotatoPuffs/Agent_SHOCK/wiki#Team--The-Pixel-Fairies) | The Pixel Fairies |
 
 ---
 
@@ -70,6 +56,3 @@ Full project documentation is maintained in the [Wiki](https://github.com/Potato
 
 ---
 
-## Team
-
-Built by the **Pixel Fairies** — [Team Wiki page](https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Home#Team--The-Pixel-Fairies) 
