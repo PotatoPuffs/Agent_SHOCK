@@ -1,10 +1,10 @@
 """
-vision.py — Shared HSV detection for Aiming.Pro drill #52502.
+vision_hsv.py — HSV detection for running RL agent and EMS on live game without CNN.
 
 Single source of truth for the colour-masking logic used to locate the
-RED target sphere and the crosshair in a captured game frame.
+RED target sphere and the GREEN crosshair in a captured game frame.
 
-The detection here mirrors the proven approach in collect_data.py, but is
+The detection here mirrors collect_data.py, but is
 generalised so the frame centre is derived from the array shape rather than
 hard-coded constants — this makes it resolution-agnostic and reusable by the
 live observer (integration/simulators.py::HSVBasedObserver).
@@ -15,7 +15,6 @@ Red wraps the 0°/360° hue boundary, so two ranges are OR'd together.
 
 import numpy as np
 import cv2  # pip install opencv-python
-
 
 # ── RED target HSV ranges ─────────────────────────────────────────────────────
 TARGET_LOWER1 = np.array([0,   100, 100])   # lower red range start
@@ -30,6 +29,20 @@ CROSS_LOWER = np.array([40, 100, 100])      # yellow-green
 CROSS_UPPER = np.array([80, 255, 255])      # pure green
 CROSSHAIR_SEARCH_RADIUS = 30                # px around centre to search
 
+# ── Capture region ────────────────────────────────────────────────────────────
+# Browser game window coordinates (for aiming.pro or similar game running in browser)
+# Set these to the pixel coordinates of the game window on screen.
+# top / left: top-left corner of the game area
+# width / height: size of the capture region
+#
+# To find your values:
+#   1. Open the game in browser (e.g., aiming.pro in Chrome)
+#   2. Run: python -m pyautogui, which will print your mouse position in real time
+#   3. Hover over top-left corner of game area → note position
+#   4. Hover over bottom-right corner → note position
+#   5. Set the top/left/width/height accordingly in DEFAULT_REGION below
+# ─────────────────────────────────────────────────────────────────────────────
+DEFAULT_REGION = {"top": 0, "left": 0, "width": 1920, "height": 1200}
 
 def find_target(hsv_frame: np.ndarray):
     """
@@ -58,8 +71,7 @@ def find_target(hsv_frame: np.ndarray):
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN,  kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
-                                   cv2.CHAIN_APPROX_SIMPLE)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
         return None
 

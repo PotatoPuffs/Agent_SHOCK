@@ -34,16 +34,12 @@ import sys
 from PIL import Image
 import torchvision.transforms as T
 import mss
-from integration.interfacing import (
-    BaseCNNObserver,
-    SCREEN_W, MAX_DX, OBS_SIZE,
-)
 
 # Import the CNN model architecture
-import sys
-import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'cnn'))
 from cnn.model import AgentShockCNN
+from integration.interfacing import (BaseCNNObserver,SCREEN_W, MAX_DX, OBS_SIZE)
+from integration.vision_hsv import DEFAULT_REGION
 
 # ─────────────────────────────────────────────────────────────────────────────
 # CNN INFERENCE CONFIGURATION
@@ -51,10 +47,10 @@ from cnn.model import AgentShockCNN
 # These must match the CNN training configuration in cnn/train.py
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), '..', 'cnn', 'checkpoints', 'best_cnn.pth')
-
+from cnn.train import CONFIG
 # CNN input dimensions — MUST match training config (cnn/train.py CONFIG)
-CNN_INPUT_H = 224
-CNN_INPUT_W = 224
+CNN_INPUT_H = CONFIG["input_h"]
+CNN_INPUT_W = CONFIG["input_w"]
 
 # Frame resolution used for denormalisation
 # ❗ SET TO MATCH YOUR CAPTURE REGION RESOLUTION
@@ -73,44 +69,22 @@ INFERENCE_TRANSFORM = T.Compose([
                 std =[0.229, 0.224, 0.225]),
 ])
 
-# ── Capture region ────────────────────────────────────────────────────────────
-# Browser game window coordinates (for aiming.pro or similar game running in browser)
-# Set these to the pixel coordinates of the game window on screen.
-# top / left: top-left corner of the game area
-# width / height: size of the capture region
-#
-# To find your values:
-#   1. Open the game in browser (e.g., aiming.pro in Chrome)
-#   2. Run: python -c "import time, pyautogui; time.sleep(2); print(pyautogui.position())"
-#   3. Hover over top-left corner of game area → note position
-#   4. Hover over bottom-right corner → note position
-#   5. Calculate: width = x2 - x1, height = y2 - y1
-#
-CAPTURE_REGION = {
-    "top":    0,     # ❗ REAL VALUE: y coordinate of game top-left corner
-    "left":   0,       # ❗ REAL VALUE: x coordinate of game top-left corner
-    "width":  FRAME_W, # ❗ REAL VALUE: width of game capture area (e.g., 1280)
-    "height": FRAME_H, # ❗ REAL VALUE: height of game capture area (e.g., 720)
-}
-# ─────────────────────────────────────────────────────────────────────────────
-
-
 class RealCNNObserver(BaseCNNObserver):
     """
     Live CNN observer — captures game screen and detects cursor + target via AgentShockCNN.
 
     Pipeline each frame:
         1. Capture screenshot from game window (mss)
-        2. Preprocess: resize & normalize to match CNN training
+        2. Preprocess: resize & normalise to match CNN training
         3. CNN forward pass → [Cx_norm, Cy_norm, Tx_norm, Ty_norm]
         4. Denormalize to pixel coordinates
         5. Return (target_x, cursor_x) for obs building
     """
 
     def __init__(self, screen_w: int = SCREEN_W):
-        self.screen_w  = screen_w
-        self._sct      = mss.mss()              # screen capture handle (reused each frame)
-        self._region   = CAPTURE_REGION
+        self.screen_w = screen_w
+        self._sct = mss.mss()              # screen capture handle (reused each frame)
+        self._region = DEFAULT_REGION
 
         # ── Load the trained CNN model ────────────────────────────────────────
         print(f"[RealCNN] Loading CNN model from {MODEL_PATH}...")
@@ -173,7 +147,7 @@ class RealCNNObserver(BaseCNNObserver):
             "BGRX"  # decode BGRA, ignore alpha → RGB
         )
         # img.show()
-        img.save("debug_capture.png")
+        # img.save("debug_capture.png")
         return img
 
     # ── Preprocessing ─────────────────────────────────────────────────────────

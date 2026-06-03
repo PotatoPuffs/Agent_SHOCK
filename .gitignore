@@ -219,10 +219,10 @@ __marimo__/
 
 
 # Training outputs
-models/
+# models/
 tb_logs/
 training_curve.png
-*.zip
+# *.zip
 
 # Python cache
 __pycache__/

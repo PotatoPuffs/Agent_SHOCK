@@ -38,7 +38,7 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm   # pip install tqdm — wraps any iterable with a live progress bar
 
-from model   import AgentShockCNN
+from model import AgentShockCNN
 from dataset import build_dataloaders
 
 

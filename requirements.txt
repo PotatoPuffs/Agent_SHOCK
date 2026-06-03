@@ -2,6 +2,7 @@
 gymnasium>=0.29
 stable-baselines3>=2.3
 torch>=2.0          # CPU build fine for training; GPU speeds it up
+torchvision>=0.15.0
 
 # ─── Screen capture & computer vision ────────────────────────────────────────
 mss>=9.0            # Fast screen capture (screen / real mode)
@@ -21,3 +22,10 @@ pyserial>=3.5
 matplotlib>=3.8
 pygame>=2.5         # Live env renderer (--render flag)
 tensorboard>=2.16   # Training curves (optional)
+
+# Numerical & Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Utilities
+tqdm>=4.65.0
