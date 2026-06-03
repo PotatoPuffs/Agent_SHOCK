@@ -379,7 +379,7 @@ def evaluate(args):
         std_scale=0.0,   # curriculum starts deterministic
     )
 
-    model    = PPO.load(MODEL_PATH, env=env)
+    model = PPO.load(MODEL_PATH, env=env)
 
     n_eps       = 10
     all_hits    = []
@@ -392,13 +392,15 @@ def evaluate(args):
         hits     = 0
         steps    = 0
         max_steps = 300
-        env.render()
+        
 
         while steps < max_steps:
+            # t0 = time.perf_counter()
             obs, target_x, cursor_x = observer.get_state(
                 last_dx=last_dx,
                 pulse_duration_ms=PULSE_DURATION_MS,
             )
+            # env.render()
             action, _ = model.predict(obs, deterministic=True)
             action_str = ACTION_MAP[int(action)]
 
@@ -417,7 +419,10 @@ def evaluate(args):
                     reward -= 2.0
 
             total_r += reward
-            steps   += 1
+            steps += 1
+            # elapsed = time.perf_counter() - t0
+            # if elapsed < DEPLOY_FRAME_DT:        # DEPLOY_FRAME_DT = 1/30, already defined
+            #     time.sleep(DEPLOY_FRAME_DT - elapsed)
 
         all_hits.append(hits)
         all_rewards.append(total_r)
@@ -508,6 +513,7 @@ def test_deploy(args):
 
                 # ── Step environment ─────────────────────────────────────────
                 obs, reward, terminated, truncated, info = observer.step(action)
+                observer.render()
                 done = terminated or truncated
 
                 episode_reward += reward
@@ -614,7 +620,6 @@ def _aggregate_seed(env, policy, n_eps, max_steps):
         "clicks_per_hit": clicks  / hit_tot  if hit_tot else float("nan"),
         "stim_per_hit":   stim_tot / hit_tot if hit_tot else float("nan"),
         "click_err_mean": float(np.mean(click_errs))        if click_errs else float("nan"),
-        "click_err_p90":  float(np.percentile(click_errs, 90)) if click_errs else float("nan"),
         "time_to_hit":    float(np.mean(tth))               if tth        else float("nan"),
     }
 
@@ -648,7 +653,7 @@ def evaluate_full(args):
           f"({n_seeds * n_eps} episodes/policy, std_scale=1.0) ===\n")
 
     metric_keys = ["mean_reward", "mean_hits", "accuracy", "clicks_per_hit",
-                   "stim_per_hit", "click_err_mean", "click_err_p90", "time_to_hit"]
+                   "stim_per_hit", "click_err_mean", "time_to_hit"]
 
     results = {}
     for name, build in policy_builders.items():
@@ -667,8 +672,7 @@ def evaluate_full(args):
     labels = {
         "mean_reward": "Reward/ep", "mean_hits": "Hits/ep", "accuracy": "Accuracy",
         "clicks_per_hit": "Clicks/hit", "stim_per_hit": "Pulses/hit",
-        "click_err_mean": "ClickErr px", "click_err_p90": "ClickErr p90",
-        "time_to_hit": "Steps/hit",
+        "click_err_mean": "ClickErr px", "time_to_hit": "Steps/hit",
     }
     name_w = max(len(n) for n in results)
     header = f"{'Metric':<14}" + "".join(f"{n:>{name_w + 14}}" for n in results)
@@ -715,7 +719,10 @@ if __name__ == "__main__":
         train(args)
 
     elif args.mode == "eval":
-        evaluate_full(args)
+        if args.baselines:
+            evaluate_full(args)
+        else:
+            evaluate(args)
 
     elif args.mode == "deploy":
         from stable_baselines3 import PPO
