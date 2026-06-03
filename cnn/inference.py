@@ -50,8 +50,8 @@ from model import AgentShockCNN
 
 MODEL_PATH = "cnn/checkpoints/best_cnn.pth"  # saved by train.py
 
-FRAME_W    = 1920   # actual game/screen resolution (used to de-normalise coords)
-FRAME_H    = 1080
+FRAME_W    = 1280   # actual game/screen resolution (used to de-normalise coords)
+FRAME_H    = 720
 
 INPUT_H    = 224    # CNN input size — MUST match CONFIG in train.py
 INPUT_W    = 224    # changing this requires re-training
@@ -284,6 +284,8 @@ def predict_coordinates(model: AgentShockCNN,
     delta_x = tx - cx
     delta_y = ty - cy
 
+    #print(f"[INF] Crosshair: ({cx:.2f}, {cy:.2f}) | Target: ({tx:.2f}, {ty:.2f}) | Delta: (Δx: {delta_x:+.2f}, Δy: {delta_y:+.2f})")
+
     return {
         "cx"      : cx,
         "cy"      : cy,
@@ -399,6 +401,14 @@ def run_inference_loop(callback=None, target_fps: int = 30):
             # ── Send full state to RL agent ────────────────────────
             if callback is not None:
                 prev_action = callback(game_state)
+
+            print(
+                f"--- FRAME {frame_count} ---\n"
+                f"Positions | Crosshair: ({game_state['cx']:.2f}, {game_state['cy']:.2f}) | Target: ({game_state['tx']:.2f}, {game_state['ty']:.2f})\n"
+                f"Error     | Δx: {game_state['delta_x']:+.2f} | Δy: {game_state['delta_y']:+.2f} | Distance: {game_state['distance']:.2f}\n"
+                f"Deltas    | Target Move: ({game_state['target_move_x']:+.2f}, {game_state['target_move_y']:+.2f}) | Cursor Move: ({game_state['cursor_move_x']:+.2f}, {game_state['cursor_move_y']:+.2f})\n"
+                f"States    | Target Dir: {game_state['prev_target_direction']} | Cursor Dir: {game_state['prev_cursor_direction']} | Prev Action: {game_state['prev_action']}\n"
+            )
 
             # ── Store this frame for next iteration ────────────────
             prev_coords = coords
