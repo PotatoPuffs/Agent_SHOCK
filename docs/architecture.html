@@ -256,15 +256,15 @@
               <span class="node-toggle" id="tog-perception">▼</span>
             </div>
             <div class="node-detail" id="det-perception">
-              <p>Reads the game state from the screen and outputs the pixel error — the distance between cursor and target — to the RL agent.</p>
+              <p> CNN watches the game screen in real time, detects the crosshair and target, and computes the pixel error between them — passing it to the RL agent every ~33ms.</p>
               <div class="detail-row">
                 <div class="detail-col">
                   <h4>Components</h4>
-                  <ul><li>Screen capture (mss)</li><li>HSV colour thresholding</li><li>Blob/contour detection</li><li>CNN target inference</li><li>Calibration pipeline</li></ul>
+                  <ul><li>Screen capture (30 FPS target)</li><li>HSV colour masking for auto-labelling</li><li>CNN trained on 3000–5000 labelled frames (MSE loss, Adam optimiser)</li></ul>
                 </div>
                 <div class="detail-col">
                   <h4>Output</h4>
-                  <ul><li>(x, y) pixel error</li><li>Target centre coords</li><li>Cursor position</li></ul>
+                  <ul><li>[Cx, Cy, Tx, Ty] → computes Δx, Δy error (x, y) pixel error</li></ul>
                 </div>
               </div>
               <div class="chips">
@@ -380,11 +380,11 @@
               <div class="detail-row">
                 <div class="detail-col">
                   <h4>Hardware</h4>
-                  <ul><li>Arduino Uno/Nano</li><li>3× relay modules</li><li>TENS/EMS unit</li><li>6× electrode pads</li></ul>
+                  <ul><li>Arduino Uno</li><li>3× relay modules</li><li>TENS/EMS unit</li><li>6× electrode pads</li></ul>
                 </div>
                 <div class="detail-col">
                   <h4>Safety limits</h4>
-                  <ul><li>Max pulse: 800ms</li><li>Cooldown: ≥500ms</li><li>Forearm and hand</li><li>E-stop wired</li></ul>
+                  <ul><li>Max pulse: 800ms</li><li>Cooldown: ≥500ms</li><li>Forearm and hand</li></ul>
                 </div>
               </div>
               <div class="chips">
