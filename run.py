@@ -53,7 +53,6 @@ from integration.interfacing import (
 # ── Constants ─────────────────────────────────────────────────────────────────
 
 MODEL_PATH = "models/aiming_ppo3"
-CLICK_Y    = 130 + 720 // 2   # vertical centre of game capture region
 
 # Deploy loop frame-rate cap (ceiling). Tune to your game/EMS pacing.
 DEPLOY_TARGET_FPS = 30
@@ -64,6 +63,7 @@ CURRICULUM_RAMP_START = 0.20   # std_scale = 0 until this fraction of training
 CURRICULUM_RAMP_END   = 0.80   # std_scale = 1 from this fraction onward
 
 ARDUINO_PORT = "/dev/ttyACM0"
+ACTION_MAP = {0: "left", 1: "right", 2: "click", 3: "none"}
 
 # ── Component factory ─────────────────────────────────────────────────────────
 
@@ -157,8 +157,6 @@ def deploy_loop(model, observer, ems):
     # from stable_baselines3 import PPO
     # from integration.interfacing import BaseCNNObserver, BaseEMSController
     from integration.simulators import SimulatedCNNObserver, HSVBasedObserver
-
-    ACTION_MAP = {0: "left", 1: "right", 2: "click"}
 
     last_dx           = 0.0
     last_action_sent  = None  # Track last EMS command to avoid redundant sends
@@ -369,7 +367,7 @@ def evaluate(args):
     print("\n=== Evaluating saved model (sim, full variance) ===\n")
 
     observer = SimulatedCNNObserver(screen_w=SCREEN_W)
-    ems      = SimulatedEMSController(observer=observer, std_scale=1.0)
+    ems = SimulatedEMSController(observer=observer, std_scale=1.0)
     
     env = AimingEnv(
         screen_w=SCREEN_W,
@@ -381,8 +379,6 @@ def evaluate(args):
     )
 
     model    = PPO.load(MODEL_PATH, env=env)
-
-    ACTION_MAP = {0: "left", 1: "right", 2: "click"}
 
     n_eps       = 10
     all_hits    = []
@@ -479,7 +475,6 @@ def test_deploy(args):
     model = PPO.load(MODEL_PATH)
 
     # ── Metrics collection ────────────────────────────────────────────────────
-    ACTION_MAP = {0: "left", 1: "right", 2: "click"}
     n_episodes = 10
     all_episode_hits = []
     all_episode_rewards = []

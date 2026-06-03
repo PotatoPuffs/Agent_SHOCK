@@ -127,7 +127,8 @@ class HSVBasedObserver(BaseCNNObserver):
             self._have_target   = True
         else:
             # Detection drop-out: reuse last known position (centre if never seen)
-            target_x = self._last_target_x
+            # target_x = self._last_target_x
+            target_x = 0.0
  
         # ── Cursor (crosshair) ────────────────────────────────────────────────
         if self.detect_crosshair:
@@ -138,10 +139,10 @@ class HSVBasedObserver(BaseCNNObserver):
         self._last_cursor_x = cursor_x
  
         # ── Build contract observation (ratios — resolution-independent) ──────
-        norm_error   = (cursor_x - target_x) / self.screen_w
-        norm_cursor  = cursor_x / self.screen_w
+        norm_error = (cursor_x - target_x) / self.screen_w
+        norm_cursor = cursor_x / self.screen_w
         last_dx_norm = float(np.clip(last_dx / MAX_DX, -1.0, 1.0))
-        pulse_norm   = pulse_duration_ms / 1000.0
+        pulse_norm = pulse_duration_ms / 1000.0
  
         obs = np.array(
             [norm_error, norm_cursor, last_dx_norm, pulse_norm],
@@ -361,7 +362,7 @@ class HSVEMSController(BaseEMSController):
     Returns actual_dx so run.py can pass it back as last_dx next frame.
     """
 
-    def __init__(self, observer: HSVBasedObserver, std_scale: float = 1.0):
+    def __init__(self, observer: HSVBasedObserver):
         """
         Args:
             observer  : HSVBasedObserver — updated after each pulse so
@@ -370,34 +371,29 @@ class HSVEMSController(BaseEMSController):
                         Curriculum scheduler in train can ramp this externally.
         """
         self.observer   = observer
-        self.std_scale  = std_scale
         self._pulse_count = 0
-        print("[SimEMS] Simulated EMS active — no hardware connected.")
+        print("[HSVEMS] HSV Simulated EMS active — no hardware connected.")
 
-    def send_action(self, action: str) -> float:
+    def send_action(self, action: str) -> None:
         """
         Simulate the EMS pulse and update the observer's cursor position.
 
-        Returns:
-            actual_dx : signed pixel displacement (positive=right, negative=left).
-                        For 'click' and 'none', returns 0.0.
-                        run.py stores this and passes it back as last_dx.
         """
         actual_dx = 0.0
 
         if action == "right":
-            print(f"[SimEMS] → RIGHT ")
+            print(f"[HSVEMS] → RIGHT ")
 
         elif action == "left":
-            print(f"[SimEMS] → LEFT ")
+            print(f"[HSVEMS] → LEFT ")
 
         elif action == "click":
-            print(f"[SimEMS] → CLICK (momentary pulse) (pulse #{self._pulse_count})")
+            print(f"[HSVEMS] → CLICK ")
 
         elif action == "none":
-            print(f"[SimEMS] → NONE (all relays open)")
+            print(f"[HSVEMS] → NONE (all relays open)")
 
-        return actual_dx
+        return 0
 
     def close(self) -> None:
-        print(f"[SimEMS] Closed. Total pulses sent: {self._pulse_count}")
+        print(f"[HSVEMS] Closed.")

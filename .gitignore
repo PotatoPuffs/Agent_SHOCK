@@ -223,6 +223,7 @@ __marimo__/
 tb_logs/
 training_curve.png
 # *.zip
+hsv_debug.png
 
 # Python cache
 __pycache__/

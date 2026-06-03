@@ -6,8 +6,6 @@ Implements BaseEMSController. Called every frame by run.py's deploy_loop().
 Communication protocol (ASCII over USB serial):
     Python  →  Arduino :  "L\n"  |  "R\n"  |  "N\n"
                           left      right     none/click (no pulse)
-    Arduino →  Python  :  "OK\n"
-                          sent after relay has opened again (pulse complete)
 
 send_action() BLOCKS until "OK\n" is received so that run.py's loop
 only advances to the next observation after the hand has finished moving.
