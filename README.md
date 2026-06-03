@@ -12,6 +12,7 @@
 |---|---|
 | `main` | Portfolio website (`docs/`) — hosted via GitHub Pages |
 | `integration_rl_agent` | Full project code — all subsystems, run modes, integration |
+| `cnn` | CNN perception pipeline — model, training, data collection, inference |
 
 **The code lives on `integration_rl_agent`. Clone that branch to run the system.**
 
