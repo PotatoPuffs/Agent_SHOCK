@@ -290,25 +290,44 @@
               <span class="node-toggle" id="tog-cognition">▼</span>
             </div>
             <div class="node-detail" id="det-cognition">
-              <p>The RL agent maps pixel error to a stimulation command. Trained in simulation via PPO, the agent learns to minimise error and hit targets as accurately as possible.</p>
+              <p>The RL agent maps pixel error to a stimulation command. Trained in simulation via PPO with a sim-to-real curriculum, the agent learns to minimise error and hit targets as accurately as possible.</p>
               <div class="detail-row">
                 <div class="detail-col">
                   <h4>Observation space</h4>
-                  <ul><li>pixel_error (float)</li><li>cursor_x (float)</li><li>target_direction (float)</li></ul>
+                  <ul>
+                    <li>norm_error (float)</li>
+                    <li>norm_cursor_x (float)</li>
+                    <li>last_dx_norm (float)</li>
+                    <li>pulse_dur_norm (float)</li>
+                  </ul>
                 </div>
                 <div class="detail-col">
                   <h4>Action space</h4>
-                  <ul><li>move_left</li><li>move_right</li><li>click</li></ul>
+                  <ul>
+                    <li>left</li>
+                    <li>right</li>
+                    <li>click</li>
+                  </ul>
                 </div>
               </div>
               <div class="detail-row">
                 <div class="detail-col">
                   <h4>Reward</h4>
-                  <ul><li>−|error|/width per step</li><li>+10 on hit</li><li>−2 on miss</li><li>−5 on timeout</li></ul>
+                  <ul>
+                    <li>−|error|/width per step</li>
+                    <li>+10 on hit</li>
+                    <li>−2 on miss</li>
+                    <li>−5 on timeout</li>
+                  </ul>
                 </div>
                 <div class="detail-col">
                   <h4>Training</h4>
-                  <ul><li>Algorithm: PPO</li><li>Steps: 500k</li><li>Library: Stable-Baselines3</li><li>Env: custom Gym</li></ul>
+                  <ul>
+                    <li>Algorithm: PPO</li>
+                    <li>Steps: 250k–500k</li>
+                    <li>Library: Stable-Baselines3</li>
+                    <li>Env: custom Gym</li>
+                  </ul>
                 </div>
               </div>
               <div class="chips">
@@ -318,9 +337,9 @@
                 <span class="chip chip-blue">TensorBoard</span>
               </div>
               <div style="margin-top:8px;">
-                <span style="font-size:10px; background:#fff3cd; color:#856404; padding:3px 8px; border:1px solid #ffc107; font-weight:700;">Owner: Dyandra Prins</span>
+                <span style="font-size:10px; background:#fff3cd; color:#856404; padding:3px 8px; border:1px solid #ffc107; font-weight:700;">Owner: Dyandra Prins · Angelyn Co</span>
               </div>
-              <a href="https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Cognition-The-Brain" target="_blank" class="wiki-link">📖 Wiki: Cognition →</a>
+              <a href="https://github.com/PotatoPuffs/Agent_SHOCK/wiki/Reinforced-Learning-Agent" target="_blank" class="wiki-link">📖 Wiki: Cognition →</a>
             </div>
           </div>
 
