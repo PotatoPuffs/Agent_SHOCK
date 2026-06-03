@@ -8,8 +8,8 @@ One file, four jobs:
     # ...and import RealCNNObserver for `run.py --cnn real`
 
 LABEL SOURCE
-    HSV-as-labeller. While you play, vision_hsv.find_target / find_crosshair
-    auto-label each captured frame. The CNN learns to reproduce those
+    HSV-as-labeller. While playing, vision_hsv.find_target / find_crosshair
+    auto-labels each captured frame. The CNN learns to reproduce those
     coordinates from raw pixels, so at inference it needs no colour masking.
 
 CONTRACT (must match HSVBasedObserver exactly so the RL policy transfers)
