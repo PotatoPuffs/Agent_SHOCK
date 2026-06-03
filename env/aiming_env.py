@@ -11,6 +11,7 @@ Action space:
     0 = left
     1 = right
     2 = click
+    3 = none
 
 Stochastic movement:
     Each pulse samples dx ~ N(mean, std_scale * std) so the agent learns

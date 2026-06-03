@@ -51,8 +51,8 @@ from dataset import build_dataloaders
 
 CONFIG = {
     "csv_path"       : "cnn/data/labels.csv",    # labels produced by collect_data.py
-    "frames_dir"     : "cnn/data/frames/",        # frame PNGs from collect_data.py
-    "checkpoint_dir" : "checkpoints/",        # where to save best_cnn.pth
+    "frames_dir"     : "cnn/data/frames_2/",        # frame PNGs from collect_data.py
+    "checkpoint_dir" : "cnn/checkpoints/",        # where to save best_cnn.pth
     "batch_size"     : 32,    # frames per gradient update step
                                # ↑ higher = faster but needs more GPU memory
     "epochs"         : 50,    # full passes through the entire training set

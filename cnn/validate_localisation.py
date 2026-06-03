@@ -20,7 +20,7 @@ from dataset import AimingProDataset, EVAL_TRANSFORMS
 DEVICE     = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 FRAME_W    = 1920
 FRAME_H    = 1080
-MODEL_PATH = "checkpoints/best_cnn.pth"
+MODEL_PATH = "cnn/checkpoints/best_cnn.pth"
 
 
 def evaluate_localisation(csv_path, frames_dir):
@@ -125,8 +125,8 @@ def print_report(df):
 
 if __name__ == "__main__":
     df = evaluate_localisation(
-        csv_path   = "data/labels.csv",
-        frames_dir = "data/frames/"
+        csv_path   = "cnn/data/labels.csv",
+        frames_dir = "cnn/data/frames_2/"
     )
     print_report(df)
     df.to_csv("localisation_results.csv", index=False)
