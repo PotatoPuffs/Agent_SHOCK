@@ -63,7 +63,7 @@ CURRICULUM_RAMP_START = 0.20   # std_scale = 0 until this fraction of training
 CURRICULUM_RAMP_END   = 0.80   # std_scale = 1 from this fraction onward
 
 ARDUINO_PORT = "/dev/ttyACM0"
-ACTION_MAP = {0: "left", 1: "right", 2: "click", 3: "none"}
+ACTION_MAP = {0: "left", 1: "right", 2: "click"}
 
 # ── Component factory ─────────────────────────────────────────────────────────
 
@@ -82,14 +82,10 @@ def make_observer(cnn_mode: str, ems_sim=None):
         return SimulatedCNNObserver(screen_w=SCREEN_W)
 
     elif cnn_mode == "hsv":
-        # Interim live observer: real screen capture + HSV masking, no CNN.
-        # Detected positions are scaled into the SCREEN_W contract space.
         from integration.simulators import HSVBasedObserver
         return HSVBasedObserver(screen_w=SCREEN_W)
 
     elif cnn_mode == "real":
-        # Teammate's implementation — import path agreed in interfacing.py
-        # Uncomment when the real observer is ready:
         from integration.cnn_new import RealCNNObserver
         return RealCNNObserver(screen_w=SCREEN_W)
         raise NotImplementedError(
@@ -116,14 +112,10 @@ def make_ems(ems_mode: str, observer=None):
         return SimulatedEMSController(observer=observer)
     
     elif ems_mode == "hsv":
-        # Interim live observer: real screen capture + HSV masking, no CNN.
-        # Detected positions are scaled into the SCREEN_W contract space.
         from integration.simulators import HSVEMSController
         return HSVEMSController(observer=observer)
 
     elif ems_mode == "real":
-        # Teammate's implementation
-        # Uncomment when the real controller is ready:
         from integration.ems_controller import RealEMSController
         return RealEMSController(port=ARDUINO_PORT,  baud=9600)
         raise NotImplementedError(
@@ -154,19 +146,18 @@ def deploy_loop(model, observer, ems):
         observer : BaseCNNObserver — get_state() called each frame
         ems      : BaseEMSController — send_action() called only on action change
     """
-    # from stable_baselines3 import PPO
-    # from integration.interfacing import BaseCNNObserver, BaseEMSController
-    from integration.simulators import SimulatedCNNObserver, HSVBasedObserver
+    from integration.simulators import SimulatedCNNObserver, HSVBasedObserver, HSVEMSController
 
-    last_dx           = 0.0
-    last_action_sent  = None  # Track last EMS command to avoid redundant sends
-    frame_count       = 0
-    hits              = 0
-    is_sim_observer   = isinstance(observer, SimulatedCNNObserver)
-    is_hsv_observer   = isinstance(observer, HSVBasedObserver)
+    last_dx = 0.0
+    last_action_sent = None  # Track last EMS command to avoid redundant sends
+    frame_count = 0
+    hits = 0
+    is_sim_observer = isinstance(observer, SimulatedCNNObserver)
+    is_hsv_observer = isinstance(observer, HSVBasedObserver)
+    is_hsv_controller = isinstance(ems, HSVEMSController)
 
-    print(f"\n  CNN={'sim' if is_sim_observer else 'hsv' if is_hsv_observer else 'real'}  "
-          f"EMS={'sim' if hasattr(ems, 'std_scale') else 'hsv' if is_hsv_observer else'real'}  ")
+    print(f"\n  CNN = {'sim' if is_sim_observer else 'hsv' if is_hsv_observer else 'real'}  "
+          f"EMS = {'sim' if hasattr(ems, 'std_scale') else 'hsv' if is_hsv_controller else 'real'}  ")
 
     try:
         while True:

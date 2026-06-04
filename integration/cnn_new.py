@@ -39,7 +39,7 @@ IMG_H = 100
 DATA_DIR   = "data_cnn"
 FRAMES_DIR = os.path.join(DATA_DIR, "frames")
 LABELS_CSV = os.path.join(DATA_DIR, "labels.csv")
-MODEL_PT   = "models/cnn_observer.pt"
+MODEL_PT   = "models/cnn_observer2.pt"
 
 # ── Contract constants (fallback values if interfacing.py isn't importable) ───
 try:
@@ -50,8 +50,6 @@ except Exception:                      # allows standalone collect/train without
     SCREEN_W      = 1280
     TARGET_RADIUS = 30
     MAX_DX        = 60
-    class BaseCNNObserver:             # minimal stand-in
-        pass
 
 
 # ── Shared preprocessing — used by dataset AND observer (no skew) ─────────────
